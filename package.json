@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.2.7",
+    "@lucide/vue": "^1.25.0",
     "@tailwindcss/vite": "^4.1.11",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.11",
