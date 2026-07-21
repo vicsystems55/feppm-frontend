@@ -120,11 +120,11 @@ const inventory = [
           </div>
         </section>
 
-        <section class="stats-grid" aria-label="Equipment summary">
-          <StatCard v-for="item in stats" :key="item.label" :item="item" />
+        <section class="stats-grid" aria-label="Equipment summary ">
+          
         </section>
 
-        <section class="dashboard-grid dashboard-grid-top">
+        <section class="dashboard-grid dashboard-grid-top ">
           <PanelCard title="Equipment health overview" menu>
             <div class="health-layout">
               <div class="donut-wrap">
