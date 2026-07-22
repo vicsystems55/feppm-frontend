@@ -53,6 +53,7 @@ export const roleNavigation = {
       moduleItem('Equipment registry', 'equipment-registry', Boxes),
     ]),
     group('Maintenance', [
+      moduleItem('Checklist templates', 'checklist-templates', ClipboardCheck),
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
       moduleItem('Daily tasks', 'daily-tasks', ListChecks),
       moduleItem('Work orders', 'work-orders', Wrench),

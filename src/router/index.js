@@ -32,6 +32,18 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/facilities' },
     },
     {
+      path: '/modules/checklist-templates',
+      name: 'checklist-templates',
+      component: () => import('../views/ChecklistManagerView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/checklist-templates' },
+    },
+    {
+      path: '/modules/:slug(daily-checklist|weekly-checklist|monthly-checklist|todays-tasks)',
+      name: 'checklist-tasks',
+      component: () => import('../views/ChecklistTasksView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/modules/:slug',
       name: 'module',
       component: () => import('../views/ModuleView.vue'),
@@ -54,7 +66,7 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } };
   }
 
-  if (to.name === 'module' || to.meta.menuPath) {
+  if (to.name === 'module' || to.name === 'checklist-tasks' || to.meta.menuPath) {
     const menuPath = to.meta.menuPath ?? to.path;
     const allowed = navigationForRoles(auth.user?.roles)
       .flatMap((group) => group.items)
