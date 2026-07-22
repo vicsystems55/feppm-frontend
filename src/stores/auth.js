@@ -85,14 +85,33 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async authorizedFetch(path, options = {}) {
+      const request = () => fetch(`${API_URL}${path}`, {
+        ...options,
+        credentials: 'include',
+        headers: {
+          ...options.headers,
+          ...(this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {}),
+        },
+      });
+
+      let response = await request();
+      if (response.status === 401 && await this.refresh()) response = await request();
+      return response;
+    },
+
     async logout() {
+      this.clearSession();
+      this.initialized = true;
+
       try {
-        await fetch(`${API_URL}/auth/logout`, {
+        const response = await fetch(`${API_URL}/auth/logout`, {
           method: 'POST',
           credentials: 'include',
         });
-      } finally {
-        this.clearSession();
+        return response.ok;
+      } catch {
+        return false;
       }
     },
   },

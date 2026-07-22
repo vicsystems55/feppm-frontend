@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import DashboardView from '../views/DashboardView.vue';
+import { navigationForRoles } from '../config/roleNavigation.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const router = createRouter({
@@ -10,7 +11,31 @@ const router = createRouter({
       path: '/',
       name: 'dashboard',
       component: DashboardView,
-      meta: { requiresAuth: true, role: 'SUPER_ADMIN' },
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/modules/users',
+      name: 'admin-accounts',
+      component: () => import('../views/AccountsView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/users' },
+    },
+    {
+      path: '/modules/roles-permissions',
+      name: 'roles-permissions',
+      component: () => import('../views/AccountsView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/roles-permissions' },
+    },
+    {
+      path: '/modules/facilities',
+      name: 'facilities',
+      component: () => import('../views/FacilitiesView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/facilities' },
+    },
+    {
+      path: '/modules/:slug',
+      name: 'module',
+      component: () => import('../views/ModuleView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/login',
@@ -29,12 +54,15 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } };
   }
 
-  if (to.meta.role && !auth.user?.roles?.some((role) => role.key === to.meta.role)) {
-    auth.clearSession();
-    return { name: 'login' };
+  if (to.name === 'module' || to.meta.menuPath) {
+    const menuPath = to.meta.menuPath ?? to.path;
+    const allowed = navigationForRoles(auth.user?.roles)
+      .flatMap((group) => group.items)
+      .some((item) => item.to === menuPath);
+    if (!allowed) return { name: 'dashboard' };
   }
 
-  if (to.meta.guestOnly && auth.isSuperAdmin) return { name: 'dashboard' };
+  if (to.meta.guestOnly && auth.isAuthenticated) return { name: 'dashboard' };
   return true;
 });
 

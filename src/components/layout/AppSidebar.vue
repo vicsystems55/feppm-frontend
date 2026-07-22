@@ -1,63 +1,29 @@
 <script setup>
-import {
-  Bell,
-  Boxes,
-  Building2,
-  ChartNoAxesCombined,
-  ClipboardCheck,
-  Crown,
-  FileText,
-  LayoutDashboard,
-  PackageSearch,
-  Settings,
-  ShieldUser,
-  Users,
-  Wrench,
-  X,
-} from '@lucide/vue';
+import { Settings, Wrench, X } from '@lucide/vue';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { navigationForRoles, primaryRoleKey } from '../../config/roleNavigation.js';
+import { useAuthStore } from '../../stores/auth.js';
 
 defineProps({
   open: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['close']);
-
-const navigation = [
-  {
-    label: 'Main menu',
-    items: [
-      { label: 'Dashboard', icon: LayoutDashboard, active: true },
-      { label: 'Facilities', icon: Building2 },
-      { label: 'Equipment registry', icon: Boxes },
-      { label: 'Maintenance plans', icon: ClipboardCheck },
-      { label: 'Work orders', icon: FileText },
-      { label: 'Inspections', icon: ShieldUser },
-      { label: 'Technicians', icon: Users },
-      { label: 'Spare parts', icon: PackageSearch },
-    ],
-  },
-  {
-    label: 'Reports',
-    items: [
-      { label: 'Reports & analytics', icon: ChartNoAxesCombined },
-      { label: 'Documents', icon: FileText },
-    ],
-  },
-  {
-    label: 'Settings',
-    items: [
-      { label: 'Users & roles', icon: Users },
-      { label: 'Settings', icon: Settings },
-      { label: 'Notifications', icon: Bell, badge: 12 },
-    ],
-  },
-];
+const auth = useAuthStore();
+const route = useRoute();
+const navigation = computed(() => navigationForRoles(auth.user?.roles));
+const roleKey = computed(() => primaryRoleKey(auth.user?.roles));
+const roleName = computed(() => auth.user?.roles.find((role) => role.key === roleKey.value)?.name ?? 'User');
+const scopeName = computed(() => auth.user?.facility?.name ?? auth.user?.organization?.name ?? 'FEPPM');
 </script>
 
 <template>
-  <div v-if="open" class="sidebar-backdrop" @click="emit('close')" />
+  <div class="sidebar-root">
+    <div v-if="open" class="sidebar-backdrop" @click="emit('close')" />
 
-  <aside class="app-sidebar" :class="{ 'is-open': open }">
+    <aside class="app-sidebar" :class="{ 'is-open': open }">
     <div class="brand-row">
       <div class="brand-mark" aria-hidden="true">
         <Settings :size="30" stroke-width="2.4" />
@@ -76,28 +42,20 @@ const navigation = [
     <nav class="sidebar-nav" aria-label="Primary navigation">
       <section v-for="group in navigation" :key="group.label" class="nav-group">
         <p class="nav-label">{{ group.label }}</p>
-        <a
-          v-for="item in group.items"
-          :key="item.label"
-          href="#"
-          class="nav-item"
-          :class="{ active: item.active }"
-          @click.prevent="emit('close')"
-        >
+        <RouterLink v-for="item in group.items" :key="item.label" :to="item.to" class="nav-item"
+          :class="{ active: route.path === item.to }" @click="emit('close')">
           <component :is="item.icon" :size="19" stroke-width="1.8" />
           <span>{{ item.label }}</span>
           <b v-if="item.badge" class="nav-badge">{{ item.badge }}</b>
-        </a>
+        </RouterLink>
       </section>
     </nav>
 
-    <div class="upgrade-card">
-      <div class="upgrade-title">
-        <span>Upgrade to Premium</span>
-        <Crown :size="18" />
-      </div>
-      <p>Unlock advanced reports, analytics and more features.</p>
-      <button type="button">Upgrade now <span>→</span></button>
+    <div class="role-scope-card">
+      <span>Signed in as</span>
+      <strong>{{ roleName }}</strong>
+      <small>{{ scopeName }}</small>
     </div>
-  </aside>
+    </aside>
+  </div>
 </template>
