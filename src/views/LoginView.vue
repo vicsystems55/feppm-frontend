@@ -2,9 +2,7 @@
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  BarChart3,
   ChevronDown,
-  ClipboardCheck,
   Eye,
   EyeOff,
   Globe2,
@@ -14,6 +12,7 @@ import {
 } from '@lucide/vue';
 
 import BrandLogo from '../components/BrandLogo.vue';
+import LoginStoryCarousel from '../components/login/LoginStoryCarousel.vue';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
@@ -67,46 +66,8 @@ async function submitLogin() {
   <main class="login-page">
     <section class="login-card">
       <aside class="login-story">
-        <svg class="industrial-art" viewBox="0 0 680 920" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <g class="factory-lines">
-            <path d="M12 620h670M62 620V352h104v268M167 620V246h138v374M305 620V330h126v290M431 620V208h110v412M541 620V300h118v320" />
-            <path d="M72 352h82l-14-72H85zM185 246h101l-18-92h-65zM453 208h66l-12-96h-43z" />
-            <path d="M32 430h590M44 505h605M118 290h452M205 186h294" />
-            <circle cx="114" cy="406" r="24" /><circle cx="370" cy="430" r="30" /><circle cx="584" cy="385" r="22" />
-          </g>
-          <g class="worker">
-            <path d="M500 423c35-8 74 12 89 45l42 96-15 292H414l5-273 35-101c9-28 21-51 46-59z" />
-            <circle cx="518" cy="373" r="53" />
-            <path d="M453 365c1-62 32-93 70-93 42 0 70 37 70 94-48-11-94-11-140-1z" />
-            <path d="M446 356h154v20H446z" />
-            <path d="m436 565-98 84 44 55 107-88M338 649l-86-22-13 42 143 35" />
-            <rect x="220" y="602" width="122" height="88" rx="8" transform="rotate(10 220 602)" />
-          </g>
-        </svg>
-        <div class="story-overlay" />
-
+        <LoginStoryCarousel />
         <BrandLogo inverse />
-
-        <div class="story-content">
-          <h1>Smart <span>Maintenance.</span><br />Stronger <b>Facilities.</b><br />Better <em>Performance.</em></h1>
-          <i class="story-rule" />
-          <p>FEPPM helps you plan, track and optimize preventive maintenance across all your facilities and equipment.</p>
-
-          <div class="story-benefits">
-            <article>
-              <span class="benefit-icon green"><ShieldCheck :size="24" /></span>
-              <div><strong>Improve equipment reliability</strong><p>Keep your assets running at peak performance.</p></div>
-            </article>
-            <article>
-              <span class="benefit-icon blue"><ClipboardCheck :size="24" /></span>
-              <div><strong>Plan preventive maintenance</strong><p>Schedule and automate maintenance activities with ease.</p></div>
-            </article>
-            <article>
-              <span class="benefit-icon orange"><BarChart3 :size="24" /></span>
-              <div><strong>Real-time insights & reports</strong><p>Make data-driven decisions and improve compliance.</p></div>
-            </article>
-          </div>
-        </div>
       </aside>
 
       <section class="login-form-panel">
@@ -216,23 +177,8 @@ async function submitLogin() {
 <style scoped>
 .login-page { min-height: 100vh; display: flex; flex-direction: column; background: #fff; }
 .login-card { width: 100%; min-height: calc(100vh - 60px); display: grid; grid-template-columns: minmax(430px, 46%) minmax(0, 54%); overflow: hidden; background: #fff; }
-.login-story { position: relative; min-width: 0; padding: clamp(34px, 4vw, 62px) clamp(34px, 5vw, 78px) 38px; display: flex; flex-direction: column; overflow: hidden; color: #fff; background: #073e75; }
-.industrial-art { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .58; }
-.factory-lines { fill: rgba(104, 171, 219, .18); stroke: rgba(137, 201, 235, .35); stroke-width: 4; }
-.worker { fill: rgba(2, 41, 79, .92); stroke: rgba(105, 176, 220, .25); stroke-width: 3; }
-.worker rect { fill: rgba(155, 213, 240, .45); }
-.story-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4, 58, 111, .98) 0%, rgba(4, 58, 111, .86) 58%, rgba(4, 47, 90, .48) 100%), linear-gradient(0deg, rgba(3, 46, 88, .72), transparent 60%); }
-.login-story :deep(.feppm-logo), .story-content { position: relative; z-index: 2; }
-.story-content { width: min(480px, 100%); margin: auto 0; }
-.story-content h1 { margin: 28px 0 0; font-size: clamp(30px, 3vw, 39px); font-weight: 650; letter-spacing: -.025em; line-height: 1.32; }
-.story-content h1 span { color: #31ba70; }.story-content h1 b { color: #3a8af0; font-weight: 650; }.story-content h1 em { color: #ff9d1b; font-style: normal; font-weight: 650; }
-.story-rule { width: 62px; height: 4px; margin: 28px 0 23px; display: block; border-radius: 4px; background: #32bd70; }
-.story-content > p { max-width: 400px; margin: 0; color: #f0f7ff; font-size: 16px; line-height: 1.7; }
-.story-benefits { margin-top: 45px; display: grid; gap: 22px; }
-.story-benefits article { display: flex; align-items: flex-start; gap: 16px; }
-.benefit-icon { width: 44px; height: 44px; display: grid; flex: 0 0 44px; place-items: center; border-radius: 13px; color: #fff; box-shadow: 0 8px 18px rgba(0,0,0,.15); }
-.benefit-icon.green { background: linear-gradient(145deg, #1bc16e, #079c53); }.benefit-icon.blue { background: linear-gradient(145deg, #278cf2, #0863cf); }.benefit-icon.orange { background: linear-gradient(145deg, #ffab31, #f47f00); }
-.story-benefits strong { display: block; font-size: 15px; line-height: 1.5; text-transform: capitalize; }.story-benefits p { margin: 4px 0 0; color: #e0edfa; font-size: 14px; line-height: 1.6; }
+.login-story { position: relative; min-width: 0; padding: clamp(34px, 4vw, 62px) clamp(34px, 5vw, 78px) 38px; display: flex; flex-direction: column; overflow: hidden; color: #fff; background: #052d28; }
+.login-story :deep(.feppm-logo) { position: relative; z-index: 3; }
 .login-form-panel { min-width: 0; padding: clamp(28px, 3vw, 48px) clamp(40px, 6vw, 92px) 38px; display: flex; flex-direction: column; background: #fff; }
 .login-panel-header { min-height: 42px; display: flex; justify-content: flex-end; align-items: flex-start; }
 .mobile-login-logo { display: none; }
@@ -301,6 +247,6 @@ async function submitLogin() {
 }
 
 @media (max-height: 780px) and (min-width: 901px) {
-  .login-card { min-height: 780px; }.story-benefits { margin-top: 28px; gap: 15px; }.login-form-wrap { padding: 20px 0; }.demo-login { margin-top: 18px; }.login-form { margin-top: 18px; }.form-field { margin-bottom: 14px; }.auth-divider { margin: 18px 0; }.contact-admin { margin-top: 20px; }
+  .login-card { min-height: 780px; }.login-form-wrap { padding: 20px 0; }.demo-login { margin-top: 18px; }.login-form { margin-top: 18px; }.form-field { margin-bottom: 14px; }.auth-divider { margin: 18px 0; }.contact-admin { margin-top: 20px; }
 }
 </style>
