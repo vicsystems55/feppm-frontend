@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/checklist-templates' },
     },
     {
+      path: '/modules/notifications',
+      name: 'notifications',
+      component: () => import('../views/NotificationsView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/notifications' },
+    },
+    {
       path: '/modules/:slug(daily-checklist|weekly-checklist|monthly-checklist|todays-tasks)',
       name: 'checklist-tasks',
       component: () => import('../views/ChecklistTasksView.vue'),

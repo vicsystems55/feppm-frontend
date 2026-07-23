@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
+import { uploadChecklistPhoto } from '../services/photoUploadService.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const route = useRoute();
@@ -12,6 +13,7 @@ const sidebarOpen = ref(false);
 const loading = ref(true);
 const submitting = ref(false);
 const uploadIndex = ref('');
+const uploadStatus = ref('');
 const error = ref('');
 const message = ref('');
 const tasks = ref([]);
@@ -28,12 +30,26 @@ function answerFor(item) { if (!answers.value[item.id]) answers.value[item.id] =
 function openTask(task) { selected.value = task; answers.value = {}; for (const item of task.maintenanceSchedule.checklistTemplate.items) answerFor(item); }
 async function startTask(task) { try { await api(`/checklists/tasks/${task.id}/start`, { method: 'POST' }); task.status = 'IN_PROGRESS'; openTask(task); } catch (startError) { error.value = startError.message; } }
 async function uploadPhoto(event, item) {
-  const file = event.target.files?.[0]; if (!file) return;
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-  if (!cloudName || !uploadPreset) { error.value = 'Cloudinary upload is not configured for this app.'; return; }
+  const input = event.currentTarget;
+  const selectedFiles = Array.from(input.files || []);
+  if (!selectedFiles.length) return;
+  const files = item.inputType === 'MULTIPLE_PHOTOS' ? selectedFiles : selectedFiles.slice(0, 1);
+
   uploadIndex.value = item.id; error.value = '';
-  try { const data = new FormData(); data.append('file', file); data.append('upload_preset', uploadPreset); data.append('folder', 'feppm/checklist-evidence'); const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: data }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error?.message || 'Photo upload failed.'); answerFor(item).photos.push({ fileUrl: payload.secure_url, thumbnailUrl: payload.eager?.[0]?.secure_url, capturedAt: new Date().toISOString() }); }
-  catch (uploadError) { error.value = uploadError.message; } finally { uploadIndex.value = ''; event.target.value = ''; }
+  try {
+    for (const [index, file] of files.entries()) {
+      uploadStatus.value = files.length > 1 ? `Uploading ${index + 1} of ${files.length}…` : 'Uploading photo…';
+      const photo = await uploadChecklistPhoto(file);
+      if (item.inputType === 'MULTIPLE_PHOTOS') answerFor(item).photos.push(photo);
+      else answerFor(item).photos = [photo];
+    }
+  } catch (uploadError) {
+    error.value = uploadError.message;
+  } finally {
+    uploadIndex.value = '';
+    uploadStatus.value = '';
+    input.value = '';
+  }
 }
 async function submit() { submitting.value = true; error.value = ''; message.value = ''; try { const payload = await api(`/checklists/tasks/${selected.value.id}/submit`, { method: 'POST', body: JSON.stringify({ responses: Object.values(answers.value), submittedOffline: false }) }); message.value = payload.message; selected.value = null; await load(); } catch (submitError) { error.value = submitError.message; } finally { submitting.value = false; } }
 watch(frequency, load); onMounted(load);
@@ -53,8 +69,8 @@ watch(frequency, load); onMounted(load);
           <div v-if="['YES_NO','PASS_FAIL','CHECKBOX'].includes(item.inputType)" class="choice-buttons"><button type="button" :class="{ selected: answerFor(item).boolean === true }" @click="answerFor(item).boolean=true">{{ item.inputType==='PASS_FAIL' ? 'Pass' : 'Yes' }}</button><button type="button" :class="{ selected: answerFor(item).boolean === false }" @click="answerFor(item).boolean=false">{{ item.inputType==='PASS_FAIL' ? 'Fail' : 'No' }}</button></div>
           <label v-else-if="['NUMBER','TEMPERATURE','HUMIDITY'].includes(item.inputType)" class="reading-input"><input v-model.number="answerFor(item).number" type="number" step="0.1" :required="item.isRequired" /><span>{{ item.inputType==='TEMPERATURE' ? '°C' : item.inputType==='HUMIDITY' ? '%' : '' }}</span></label>
           <textarea v-else-if="!item.inputType.includes('PHOTO')" v-model="answerFor(item).text" rows="3" :required="item.isRequired" placeholder="Enter your response" />
-          <div v-if="item.inputType.includes('PHOTO') || item.evidenceRequirement==='REQUIRED'" class="photo-answer"><div class="photo-grid"><figure v-for="(photo,photoIndex) in answerFor(item).photos" :key="photo.fileUrl"><img :src="photo.fileUrl" alt="Checklist evidence" /><button type="button" @click="answerFor(item).photos.splice(photoIndex,1)"><X :size="14" /></button></figure></div><label class="photo-upload"><CloudUpload v-if="uploadIndex===item.id" class="spin" :size="21" /><Camera v-else :size="21" /><span>{{ uploadIndex===item.id ? 'Uploading…' : 'Take or upload photo' }}</span><input type="file" accept="image/*" capture="environment" :disabled="uploadIndex===item.id" @change="uploadPhoto($event,item)" /></label></div>
-        </div></article><footer><div><Clock3 :size="18" /><span>Submit only after completing every required check.</span></div><button type="submit" :disabled="submitting"><LoaderCircle v-if="submitting" class="spin" :size="18" /><Send v-else :size="18" />{{ submitting ? 'Submitting…' : 'Submit checklist' }}</button></footer></form>
+          <div v-if="item.inputType.includes('PHOTO') || item.evidenceRequirement==='REQUIRED'" class="photo-answer"><div class="photo-grid"><figure v-for="(photo,photoIndex) in answerFor(item).photos" :key="photo.fileUrl"><img :src="photo.thumbnailUrl || photo.fileUrl" alt="Checklist evidence" /><button type="button" aria-label="Remove photo" @click="answerFor(item).photos.splice(photoIndex,1)"><X :size="14" /></button></figure></div><label class="photo-upload" :class="{ uploading: uploadIndex===item.id }"><CloudUpload v-if="uploadIndex===item.id" class="spin" :size="21" /><Camera v-else :size="21" /><span>{{ uploadIndex===item.id ? uploadStatus : item.inputType==='MULTIPLE_PHOTOS' ? 'Take or upload photos' : answerFor(item).photos.length ? 'Replace photo' : 'Take or upload photo' }}</span><small v-if="uploadIndex!==item.id">JPG, PNG, WebP or HEIC · maximum 10 MB</small><input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" :multiple="item.inputType==='MULTIPLE_PHOTOS'" :disabled="Boolean(uploadIndex)" @change="uploadPhoto($event,item)" /></label></div>
+        </div></article><footer><div><Clock3 :size="18" /><span>Submit only after completing every required check.</span></div><button type="submit" :disabled="submitting || Boolean(uploadIndex)"><LoaderCircle v-if="submitting" class="spin" :size="18" /><Send v-else :size="18" />{{ submitting ? 'Submitting…' : uploadIndex ? 'Photo upload in progress' : 'Submit checklist' }}</button></footer></form>
       </section>
     </main></div>
   </div>
