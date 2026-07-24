@@ -58,7 +58,10 @@ const facilityOptions = computed(() => {
   const facilities = selectedOrganization.value?.facilities ?? [];
   if (selectedRole.value?.key !== 'FACILITY_MANAGER') return facilities;
   if (!form.scopeUnitId) return [];
-  return facilities.filter((facility) => facility.administrativeUnitId === form.scopeUnitId);
+  return facilities.filter((facility) => (
+    lgaIdForUnit(selectedOrganization.value, facility.administrativeUnitId)
+    === form.scopeUnitId
+  ));
 });
 const permissionGroups = computed(() => Object.entries(permissions.value.reduce((groups, permission) => {
   const group = permission.key.split('.')[0].replaceAll('_', ' ');
@@ -69,6 +72,19 @@ const permissionRole = computed(() => roles.value.find((role) => role.id === sel
 
 function apiPayload(response) {
   return response.json().catch(() => ({}));
+}
+
+function lgaIdForUnit(organization, administrativeUnitId) {
+  if (!organization || !administrativeUnitId) return '';
+  const units = new Map(organization.administrativeUnits.map((unit) => [unit.id, unit]));
+  const visited = new Set();
+  let unit = units.get(administrativeUnitId);
+  while (unit && !visited.has(unit.id)) {
+    if (unit.type === 'LGA') return unit.id;
+    visited.add(unit.id);
+    unit = units.get(unit.parentId);
+  }
+  return '';
 }
 
 async function loadOptions() {
@@ -124,6 +140,12 @@ function openCreate() {
 
 function openEdit(account) {
   editingId.value = account.id;
+  const organization = organizations.value.find((item) => item.id === account.organization.id);
+  const assignedFacility = organization?.facilities.find((item) => item.id === account.facility?.id);
+  const facilityLgaId = lgaIdForUnit(
+    organization,
+    assignedFacility?.administrativeUnitId ?? account.facility?.administrativeUnitId,
+  );
   Object.assign(form, {
     firstName: account.firstName,
     lastName: account.lastName,
@@ -132,7 +154,7 @@ function openEdit(account) {
     password: '',
     organizationId: account.organization.id,
     roleId: account.roles[0]?.id ?? '',
-    scopeUnitId: account.scopes[0]?.id ?? account.facility?.administrativeUnitId ?? '',
+    scopeUnitId: account.scopes.find((scope) => scope.type === 'LGA')?.id ?? facilityLgaId,
     facilityId: account.facility?.id ?? '',
     status: account.status,
   });
