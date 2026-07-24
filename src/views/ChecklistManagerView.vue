@@ -1,5 +1,5 @@
 <script setup>
-import { Archive, Check, ChevronDown, ChevronUp, ClipboardCheck, LoaderCircle, Plus, Save, Send, Trash2, X } from '@lucide/vue';
+import { Archive, Check, ChevronDown, ChevronUp, ClipboardCheck, LoaderCircle, Plus, RotateCcw, Save, Send, Trash2, X } from '@lucide/vue';
 import { onMounted, ref } from 'vue';
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
@@ -80,7 +80,7 @@ onMounted(load);
             <header><span :class="`status-${template.status.toLowerCase()}`">{{ template.status === 'INACTIVE' ? 'Draft' : template.status }}</span><b>{{ template.frequencyType }}</b></header>
             <ClipboardCheck :size="28" /><h2>{{ template.name }}</h2><p>{{ template.equipmentType.name }}</p>
             <div><span>Version {{ template.version }}</span><span>{{ template.items.length }} questions</span><span>{{ template._count.schedules }} schedules</span></div>
-            <footer><button v-if="template.status === 'INACTIVE'" type="button" @click="edit(template)"><Save :size="15" />Edit</button><button v-if="template.status === 'INACTIVE'" class="primary" type="button" @click="action(template,'publish')"><Send :size="15" />Publish</button><button v-if="template.status === 'ACTIVE'" type="button" @click="action(template,'archive')"><Archive :size="15" />Archive</button></footer>
+            <footer><button v-if="template.status === 'INACTIVE' && !template._count.schedules" type="button" @click="edit(template)"><Save :size="15" />Edit</button><button v-if="template.status === 'INACTIVE'" class="primary" type="button" @click="action(template,'publish')"><Send :size="15" />Publish</button><button v-if="template.status === 'ACTIVE'" type="button" @click="action(template,'archive')"><Archive :size="15" />Archive</button><button v-if="template.status === 'ARCHIVED'" class="primary" type="button" @click="action(template,'unarchive')"><RotateCcw :size="15" />Unarchive</button></footer>
           </article>
           <div v-if="!templates.length" class="checklist-empty"><ClipboardCheck :size="34" /><strong>No checklist templates yet</strong><span>Create one here or run the cold-chain starter-template seed.</span></div>
         </section>

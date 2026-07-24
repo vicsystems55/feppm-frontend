@@ -51,10 +51,15 @@ const permissionsTab = computed(() => route.name === 'roles-permissions');
 const selectedOrganization = computed(() => organizations.value.find((item) => item.id === form.organizationId));
 const selectedRole = computed(() => roles.value.find((item) => item.id === form.roleId));
 const scopeType = computed(() => ({
-  NATIONAL_ADMIN: 'NATIONAL', ZONAL_ADMIN: 'ZONE', STATE_ADMIN: 'STATE', LGA_ADMIN: 'LGA',
+  NATIONAL_ADMIN: 'NATIONAL', ZONAL_ADMIN: 'ZONE', STATE_ADMIN: 'STATE', LGA_ADMIN: 'LGA', FACILITY_MANAGER: 'LGA',
 }[selectedRole.value?.key] ?? null));
 const scopeOptions = computed(() => selectedOrganization.value?.administrativeUnits.filter((unit) => unit.type === scopeType.value) ?? []);
-const facilityOptions = computed(() => selectedOrganization.value?.facilities ?? []);
+const facilityOptions = computed(() => {
+  const facilities = selectedOrganization.value?.facilities ?? [];
+  if (selectedRole.value?.key !== 'FACILITY_MANAGER') return facilities;
+  if (!form.scopeUnitId) return [];
+  return facilities.filter((facility) => facility.administrativeUnitId === form.scopeUnitId);
+});
 const permissionGroups = computed(() => Object.entries(permissions.value.reduce((groups, permission) => {
   const group = permission.key.split('.')[0].replaceAll('_', ' ');
   (groups[group] ??= []).push(permission);
@@ -127,7 +132,7 @@ function openEdit(account) {
     password: '',
     organizationId: account.organization.id,
     roleId: account.roles[0]?.id ?? '',
-    scopeUnitId: account.scopes[0]?.id ?? '',
+    scopeUnitId: account.scopes[0]?.id ?? account.facility?.administrativeUnitId ?? '',
     facilityId: account.facility?.id ?? '',
     status: account.status,
   });
@@ -142,6 +147,10 @@ function organizationChanged() {
 
 function roleChanged() {
   form.scopeUnitId = '';
+  form.facilityId = '';
+}
+
+function scopeChanged() {
   form.facilityId = '';
 }
 
@@ -284,8 +293,8 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
           <label v-if="!editingId">Temporary password<input v-model="form.password" type="password" minlength="10" required /></label>
           <label>Organization<select v-model="form.organizationId" required @change="organizationChanged"><option disabled value="">Select organization</option><option v-for="organization in organizations" :key="organization.id" :value="organization.id">{{ organization.name }}</option></select></label>
           <label>Role<select v-model="form.roleId" required @change="roleChanged"><option disabled value="">Select role</option><option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option></select></label>
-          <label v-if="scopeType">{{ scopeType.toLowerCase() }} scope<select v-model="form.scopeUnitId" required><option disabled value="">Select scope</option><option v-for="unit in scopeOptions" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
-          <label v-if="selectedRole?.key === 'FACILITY_MANAGER'">Facility<select v-model="form.facilityId" required><option disabled value="">Select facility</option><option v-for="facility in facilityOptions" :key="facility.id" :value="facility.id">{{ facility.name }}</option></select></label>
+          <label v-if="scopeType">{{ selectedRole?.key === 'FACILITY_MANAGER' ? 'Local government area (LGA)' : `${scopeType.toLowerCase()} scope` }}<select v-model="form.scopeUnitId" required @change="scopeChanged"><option disabled value="">Select {{ selectedRole?.key === 'FACILITY_MANAGER' ? 'LGA' : 'scope' }}</option><option v-for="unit in scopeOptions" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
+          <label v-if="selectedRole?.key === 'FACILITY_MANAGER'">Health facility<select v-model="form.facilityId" required :disabled="!form.scopeUnitId"><option disabled value="">{{ form.scopeUnitId ? 'Select health facility' : 'Select an LGA first' }}</option><option v-for="facility in facilityOptions" :key="facility.id" :value="facility.id">{{ facility.name }}</option></select><small v-if="form.scopeUnitId && !facilityOptions.length" class="field-help">No active health facilities are registered under this LGA.</small></label>
           <label v-if="editingId">Account status<select v-model="form.status"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="SUSPENDED">Suspended</option></select></label>
           <button class="save-account" type="submit" :disabled="saving">{{ saving ? 'Saving changes…' : editingId ? 'Save access changes' : 'Create login account' }}</button>
         </form>
@@ -300,4 +309,5 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
 .permissions-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:14px;align-items:start}.roles-list{padding:12px}.roles-list h2{margin:3px 7px 10px;font-size:14px}.roles-list button{width:100%;padding:10px;display:flex;align-items:center;gap:9px;border:0;border-radius:9px;background:transparent;text-align:left;cursor:pointer}.roles-list button.active{background:var(--blue-soft)}.roles-list button>span{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;color:var(--blue);background:#f2f6fc}.roles-list button div{display:flex;flex-direction:column}.roles-list strong{font-size:11px}.roles-list small{margin-top:2px;color:var(--muted);font-size:9px}.permissions-panel{padding:19px}.permissions-title{display:flex;justify-content:space-between;gap:18px}.permissions-title h2{margin:0;font-size:21px}.permissions-title span{display:block;margin-top:4px;color:var(--muted);font-size:11px}.permissions-title button:disabled{opacity:.5;cursor:not-allowed}.protected-note{padding:10px;border-radius:8px;color:#b54708;background:#fff7ed;font-size:11px}.permission-groups{margin-top:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.permission-groups section{padding:13px;border:1px solid var(--border);border-radius:10px}.permission-groups h3{margin:0 0 9px;text-transform:capitalize;font-size:12px}.permission-groups label{padding:7px 0;display:flex;align-items:flex-start;gap:8px}.permission-groups input{margin-top:3px;accent-color:var(--blue)}.permission-groups label span{display:flex;flex-direction:column}.permission-groups strong{font-size:10px}.permission-groups small{margin-top:2px;color:var(--muted);font-size:9px;line-height:1.4}
 .account-drawer-backdrop{position:fixed;inset:0;z-index:80;display:flex;justify-content:flex-end;background:rgba(16,24,40,.42)}.account-drawer{position:relative;width:min(470px,100%);height:100%;padding:26px;overflow-y:auto;background:#fff;box-shadow:-18px 0 45px rgba(16,24,40,.16)}.drawer-close{position:absolute;right:20px;top:20px;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--border);border-radius:8px;background:#fff}.drawer-icon{width:49px;height:49px;display:grid;place-items:center;border-radius:12px;color:var(--blue);background:var(--blue-soft)}.account-drawer>p{margin-top:14px}.account-drawer h2{margin:0 0 17px;font-size:21px}.account-drawer form{display:grid;gap:12px}.account-drawer label{display:flex;flex-direction:column;gap:5px;color:#344054;font-size:11px;font-weight:600}.account-drawer input,.account-drawer select{height:41px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:12px}.account-drawer input:disabled{color:#667085;background:#f8fafc}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.save-account{margin-top:5px;height:43px;border:0;border-radius:9px;color:#fff;background:var(--blue);font-size:12px;font-weight:650}.save-account:disabled{opacity:.6}
 @media(max-width:950px){.account-filters{grid-template-columns:1fr 1fr}.permissions-layout{grid-template-columns:1fr}.roles-list{display:flex;overflow-x:auto}.roles-list h2{display:none}.roles-list button{min-width:190px}.permission-groups{grid-template-columns:1fr}}@media(max-width:650px){.accounts-page{padding:14px 10px}.accounts-heading{flex-direction:column}.account-filters{grid-template-columns:1fr}.permission-groups{grid-template-columns:1fr}.permissions-title{flex-direction:column}.form-row{grid-template-columns:1fr}}
+.account-drawer select:disabled{color:#667085;background:#f8fafc}.field-help{color:#b54708;font-size:10px;font-weight:500}
 </style>
