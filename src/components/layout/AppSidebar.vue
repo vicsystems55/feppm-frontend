@@ -31,7 +31,7 @@ const scopeName = computed(() => auth.user?.facility?.name ?? auth.user?.organiz
       </div>
       <div class="brand-copy">
         <div class="brand-name"><span>FE</span>PPM</div>
-        <p>Facility Equipment</p>
+        <p>Facility Electronic</p>
         <small>Planned Preventive Maintenance</small>
       </div>
       <button class="sidebar-close" type="button" aria-label="Close navigation" @click="emit('close')">

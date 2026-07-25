@@ -18,6 +18,7 @@ import {
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
+import FacilityTree from '../components/facilities/FacilityTree.vue';
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
 import { useAuthStore } from '../stores/auth.js';
@@ -28,6 +29,7 @@ const loading = ref(true);
 const detailLoading = ref(false);
 const errorMessage = ref('');
 const facilities = ref([]);
+const treeNodes = ref([]);
 const lgas = ref([]);
 const selectedFacility = ref(null);
 const search = ref('');
@@ -49,9 +51,12 @@ const facilityTypes = [
   ['OTHER', 'Other'],
 ];
 
-const scopeLabel = computed(() => auth.user?.scopes?.find((scope) => scope.type === 'STATE')?.name
-  ?? auth.user?.organization?.name
-  ?? 'your state');
+const scopeLabel = computed(() => {
+  if (auth.isSuperAdmin) return 'Nigeria';
+  return auth.user?.scopes?.find((scope) => scope.type === 'STATE')?.name
+    ?? auth.user?.organization?.name
+    ?? 'your state';
+});
 
 const summaryCards = computed(() => [
   { label: 'Total facilities', value: summary.value.total, icon: Hospital, tone: 'blue' },
@@ -78,13 +83,27 @@ async function loadFacilities(page = 1) {
   loading.value = true;
   errorMessage.value = '';
   try {
-    const response = await auth.authorizedFetch(`/facilities?${buildQuery(page)}`);
+    const query = buildQuery(page);
+    const [response, treeResponse] = await Promise.all([
+      auth.authorizedFetch(`/facilities?${query}`),
+      auth.isSuperAdmin
+        ? auth.authorizedFetch(`/facilities/tree?${query}`)
+        : Promise.resolve(null),
+    ]);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.message ?? 'Unable to load facilities.');
     facilities.value = payload.data.facilities;
     pagination.value = payload.data.pagination;
     summary.value = payload.data.summary;
     lgas.value = payload.data.filters.lgas;
+
+    if (treeResponse) {
+      const treePayload = await treeResponse.json().catch(() => ({}));
+      if (!treeResponse.ok) throw new Error(treePayload.message ?? 'Unable to load the facility hierarchy.');
+      treeNodes.value = treePayload.data.tree;
+    } else {
+      treeNodes.value = [];
+    }
   } catch (error) {
     errorMessage.value = error.message;
   } finally {
@@ -182,7 +201,14 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
             <LoaderCircle :size="25" class="spin" /> Loading facilities…
           </div>
 
-          <div v-else-if="facilities.length" class="facility-table-wrap">
+          <FacilityTree
+            v-else-if="auth.isSuperAdmin && treeNodes.length"
+            :nodes="treeNodes"
+            :auto-expand="Boolean(search.trim() || lgaId || status || facilityType)"
+            @select="viewFacility"
+          />
+
+          <div v-else-if="!auth.isSuperAdmin && facilities.length" class="facility-table-wrap">
             <table class="facility-table">
               <thead>
                 <tr>
@@ -220,7 +246,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
             <span>Try changing the search term or filters.</span>
           </div>
 
-          <footer v-if="!loading && pagination.total" class="facility-pagination">
+          <footer v-if="!auth.isSuperAdmin && !loading && pagination.total" class="facility-pagination">
             <span>Showing {{ (pagination.page - 1) * pagination.pageSize + 1 }}–{{ Math.min(pagination.page * pagination.pageSize, pagination.total) }} of {{ pagination.total }}</span>
             <div>
               <button type="button" :disabled="pagination.page === 1" @click="changePage(pagination.page - 1)"><ChevronLeft :size="17" /> Previous</button>

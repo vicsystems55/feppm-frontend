@@ -15,7 +15,7 @@ defineProps({
     </span>
     <span class="feppm-logo-copy">
       <strong><i>FE</i>PPM</strong>
-      <span>Facility Equipment</span>
+      <span>Facility Electronic</span>
       <small>Planned Preventive Maintenance</small>
     </span>
   </div>
