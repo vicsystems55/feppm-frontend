@@ -12,6 +12,7 @@ import {
   FileText,
   Gauge,
   HeartPulse,
+  Images,
   LayoutDashboard,
   ListChecks,
   Map,
@@ -163,18 +164,17 @@ export const roleNavigation = {
   LGA_ADMIN: [
     group('Overview', [dashboard]),
     group('Organization', [moduleItem('Facilities', 'facilities', Warehouse)]),
-    group('Equipment', [moduleItem('Equipment', 'equipment', Boxes)]),
+    group('Equipment', [moduleItem('Equipment registry', 'lga-equipment', Boxes)]),
     group('Maintenance', [
-      moduleItem('Daily tasks', 'daily-tasks', ListChecks),
-      moduleItem('Work orders', 'work-orders', Wrench),
+      moduleItem('Daily tasks', 'lga-daily-tasks', ListChecks),
+      moduleItem('Weekly tasks', 'lga-weekly-tasks', ListChecks),
+      moduleItem('Monthly tasks', 'lga-monthly-tasks', ListChecks),
       moduleItem('Calendar', 'maintenance-calendar', CalendarDays),
     ]),
-    group('Monitoring', [
-      moduleItem('Facility compliance', 'facility-compliance', Gauge),
-      moduleItem('Alerts', 'alerts', Bell),
+    group('Reports', [
+      moduleItem('Task reports', 'lga-reports', FileText),
+      moduleItem('Media library', 'lga-media', Images),
     ]),
-    group('Inventory', [moduleItem('Spare parts', 'spare-parts', PackageSearch)]),
-    group('Reports', [moduleItem('Reports', 'reports', FileText)]),
     group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
   ],
 

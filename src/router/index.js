@@ -44,6 +44,42 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/notifications' },
     },
     {
+      path: '/modules/lga-reports',
+      name: 'lga-reports',
+      component: () => import('../views/LgaReportsView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/lga-reports' },
+    },
+    {
+      path: '/modules/lga-media',
+      name: 'lga-media',
+      component: () => import('../views/LgaReportsView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/lga-media' },
+    },
+    {
+      path: '/modules/lga-equipment',
+      name: 'lga-equipment',
+      component: () => import('../views/LgaEquipmentView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/lga-equipment' },
+    },
+    {
+      path: '/modules/lga-daily-tasks',
+      name: 'lga-daily-tasks',
+      component: () => import('../views/LgaTasksView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/lga-daily-tasks' },
+    },
+    {
+      path: '/modules/lga-weekly-tasks',
+      name: 'lga-weekly-tasks',
+      component: () => import('../views/LgaTasksView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/lga-weekly-tasks' },
+    },
+    {
+      path: '/modules/lga-monthly-tasks',
+      name: 'lga-monthly-tasks',
+      component: () => import('../views/LgaTasksView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/lga-monthly-tasks' },
+    },
+    {
       path: '/modules/:slug(daily-checklist|weekly-checklist|monthly-checklist|todays-tasks)',
       name: 'checklist-tasks',
       component: () => import('../views/ChecklistTasksView.vue'),
