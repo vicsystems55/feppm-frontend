@@ -8,6 +8,7 @@ import {
   Send,
 } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
@@ -16,6 +17,7 @@ import { useNotificationStore } from '../stores/notifications.js';
 
 const auth = useAuthStore();
 const notifications = useNotificationStore();
+const router = useRouter();
 const sidebarOpen = ref(false);
 const filter = ref('all');
 const actionError = ref('');
@@ -62,6 +64,12 @@ async function markRead(notification) {
   } catch (error) {
     actionError.value = error.message;
   }
+}
+
+async function openNotification(notification) {
+  await markRead(notification);
+  const ticketId = alertDetails(notification).ticketId;
+  if (ticketId) await router.push(`/modules/issues/${ticketId}`);
 }
 
 async function markAllRead() {
@@ -228,7 +236,7 @@ onMounted(async () => {
               type="button"
               class="notification-row"
               :class="{ unread: !notification.readAt }"
-              @click="markRead(notification)"
+              @click="openNotification(notification)"
             >
               <span class="notification-row__icon">
                 <ClipboardCheck :size="21" />

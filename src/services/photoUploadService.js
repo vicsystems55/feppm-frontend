@@ -1,4 +1,5 @@
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+export const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+export const MAX_TICKET_PHOTOS = 5;
 const UPLOAD_TIMEOUT_MS = 60_000;
 const ALLOWED_IMAGE_TYPES = new Set([
   'image/jpeg',
@@ -13,6 +14,7 @@ export const photoUploadConfig = Object.freeze({
   cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim(),
   uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET?.trim(),
   folder: import.meta.env.VITE_CLOUDINARY_UPLOAD_FOLDER?.trim() || 'feppm/photos',
+  ticketFolder: import.meta.env.VITE_CLOUDINARY_TICKET_FOLDER?.trim() || 'feppm/tickets',
 });
 
 function validateConfiguration() {
@@ -21,7 +23,7 @@ function validateConfiguration() {
   }
 }
 
-function validateImage(file) {
+export function validatePhotoFile(file) {
   if (!(file instanceof File)) throw new Error('Select an image to upload.');
   const extension = file.name.split('.').pop()?.toLowerCase();
   if (!ALLOWED_IMAGE_TYPES.has(file.type) && !ALLOWED_IMAGE_EXTENSIONS.has(extension)) {
@@ -43,9 +45,9 @@ function uploadErrorMessage(payload, response) {
   return cloudinaryMessage || 'The photo could not be uploaded. Please try again.';
 }
 
-export async function uploadChecklistPhoto(file) {
+async function uploadPhoto(file, { folder, tags }) {
   validateConfiguration();
-  validateImage(file);
+  validatePhotoFile(file);
 
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
@@ -54,8 +56,8 @@ export async function uploadChecklistPhoto(file) {
     const data = new FormData();
     data.append('file', file);
     data.append('upload_preset', photoUploadConfig.uploadPreset);
-    data.append('folder', photoUploadConfig.folder);
-    data.append('tags', 'feppm,checklist-evidence');
+    data.append('folder', folder);
+    data.append('tags', tags);
 
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${encodeURIComponent(photoUploadConfig.cloudName)}/image/upload`,
@@ -82,4 +84,47 @@ export async function uploadChecklistPhoto(file) {
   } finally {
     window.clearTimeout(timeoutId);
   }
+}
+
+export function uploadChecklistPhoto(file) {
+  return uploadPhoto(file, {
+    folder: photoUploadConfig.folder,
+    tags: 'feppm,checklist-evidence',
+  });
+}
+
+export async function uploadTicketPhoto(file) {
+  const uploaded = await uploadPhoto(file, {
+    folder: photoUploadConfig.ticketFolder,
+    tags: 'feppm,ticket-attachment',
+  });
+
+  return {
+    fileUrl: uploaded.fileUrl,
+    thumbnailUrl: uploaded.thumbnailUrl,
+    fileName: file.name,
+    mimeType: file.type || mimeTypeFromExtension(file.name),
+    fileSize: file.size,
+  };
+}
+
+function mimeTypeFromExtension(fileName) {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+  }[extension] || 'application/octet-stream';
+}
+
+export async function uploadTicketPhotos(files, onProgress = () => {}) {
+  const attachments = [];
+  for (const [index, file] of files.entries()) {
+    attachments.push(await uploadTicketPhoto(file));
+    onProgress(index + 1, files.length);
+  }
+  return attachments;
 }

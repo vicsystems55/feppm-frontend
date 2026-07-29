@@ -75,7 +75,11 @@ async function openNotification(notification) {
   try {
     await notifications.markRead(notification.id);
   } finally {
-    await router.push({ name: 'notifications' });
+    if (notification.alert?.ticketId) {
+      await router.push(`/modules/issues/${notification.alert.ticketId}`);
+    } else {
+      await router.push({ name: 'notifications' });
+    }
   }
 }
 

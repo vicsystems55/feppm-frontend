@@ -14,6 +14,7 @@ import {
   HeartPulse,
   Images,
   LayoutDashboard,
+  LifeBuoy,
   ListChecks,
   Map,
   MapPinned,
@@ -67,6 +68,7 @@ export const roleNavigation = {
       moduleItem('Procurement', 'procurement', ShoppingCart),
     ]),
     group('Monitoring', [
+      moduleItem('Issues & support', 'issues', LifeBuoy),
       moduleItem('Alerts', 'alerts', Bell),
       moduleItem('Equipment health', 'equipment-health', HeartPulse),
       moduleItem('Compliance monitor', 'compliance-monitor', Gauge),
@@ -101,6 +103,7 @@ export const roleNavigation = {
       moduleItem('Maintenance calendar', 'maintenance-calendar', CalendarDays),
     ]),
     group('Monitoring', [
+      moduleItem('Issues & support', 'issues', LifeBuoy),
       moduleItem('National compliance', 'national-compliance', Gauge),
       moduleItem('Equipment health', 'equipment-health', HeartPulse),
       moduleItem('Alerts', 'alerts', Bell),
@@ -132,6 +135,7 @@ export const roleNavigation = {
       moduleItem('Calendar', 'maintenance-calendar', CalendarDays),
     ]),
     group('Monitoring', [
+      moduleItem('Issues & support', 'issues', LifeBuoy),
       moduleItem('Zone compliance', 'zone-compliance', Gauge),
       moduleItem('Alerts', 'alerts', Bell),
     ]),
@@ -153,6 +157,7 @@ export const roleNavigation = {
       moduleItem('Work orders', 'work-orders', Wrench),
     ]),
     group('Monitoring', [
+      moduleItem('Issues & support', 'issues', LifeBuoy),
       moduleItem('State compliance', 'state-compliance', Gauge),
       moduleItem('Alerts', 'alerts', Bell),
     ]),
@@ -171,6 +176,7 @@ export const roleNavigation = {
       moduleItem('Monthly tasks', 'lga-monthly-tasks', ListChecks),
       moduleItem('Calendar', 'maintenance-calendar', CalendarDays),
     ]),
+    group('Support', [moduleItem('Issues & support', 'issues', LifeBuoy)]),
     group('Reports', [
       moduleItem('Task reports', 'lga-reports', FileText),
       moduleItem('Media library', 'lga-media', Images),
@@ -191,7 +197,7 @@ export const roleNavigation = {
       moduleItem('Work orders', 'work-orders', Wrench),
     ]),
     group('Operations', [
-      moduleItem('Fault reporting', 'fault-reporting', TriangleAlert),
+      moduleItem('Issues & support', 'issues', LifeBuoy),
       moduleItem('Spare parts', 'spare-parts', PackageSearch),
       moduleItem('Documents', 'documents', FileText),
     ]),

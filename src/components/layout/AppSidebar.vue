@@ -43,7 +43,7 @@ const scopeName = computed(() => auth.user?.facility?.name ?? auth.user?.organiz
       <section v-for="group in navigation" :key="group.label" class="nav-group">
         <p class="nav-label">{{ group.label }}</p>
         <RouterLink v-for="item in group.items" :key="item.label" :to="item.to" class="nav-item"
-          :class="{ active: route.path === item.to }" @click="emit('close')">
+          :class="{ active: (route.meta.menuPath ?? route.path) === item.to }" @click="emit('close')">
           <component :is="item.icon" :size="19" stroke-width="1.8" />
           <span>{{ item.label }}</span>
           <b v-if="item.badge" class="nav-badge">{{ item.badge }}</b>

@@ -44,6 +44,18 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/notifications' },
     },
     {
+      path: '/modules/issues',
+      name: 'tickets',
+      component: () => import('../views/TicketsView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/issues' },
+    },
+    {
+      path: '/modules/issues/:id',
+      name: 'ticket-detail',
+      component: () => import('../views/TicketDetailView.vue'),
+      meta: { requiresAuth: true, menuPath: '/modules/issues' },
+    },
+    {
       path: '/modules/lga-reports',
       name: 'lga-reports',
       component: () => import('../views/LgaReportsView.vue'),
