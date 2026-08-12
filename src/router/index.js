@@ -14,6 +14,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/modules/maintenance-operations',
+      name: 'maintenance-operations',
+      component: () => import('../views/MaintenanceOperationsView.vue'),
+      meta: { requiresAuth: true, permission: 'maintenance_operations.view' },
+    },
+    {
       path: '/modules/users',
       name: 'admin-accounts',
       component: () => import('../views/AccountsView.vue'),
@@ -118,6 +124,10 @@ router.beforeEach(async (to) => {
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login', query: { redirect: to.fullPath } };
+  }
+
+  if (to.meta.permission && !auth.user?.permissions?.includes(to.meta.permission)) {
+    return { name: 'dashboard' };
   }
 
   if (to.name === 'module' || to.name === 'checklist-tasks' || to.meta.menuPath) {

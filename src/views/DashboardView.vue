@@ -11,6 +11,7 @@ import NationalAdminDashboard from './dashboards/NationalAdminDashboard.vue';
 import StateAdminDashboard from './dashboards/StateAdminDashboard.vue';
 import SuperAdminDashboard from './dashboards/SuperAdminDashboard.vue';
 import ZonalAdminDashboard from './dashboards/ZonalAdminDashboard.vue';
+import MaintenanceOperationsDashboard from './dashboards/MaintenanceOperationsDashboard.vue';
 
 const auth = useAuthStore();
 const sidebarOpen = ref(false);
@@ -25,6 +26,12 @@ const dashboards = {
   STATE_ADMIN: StateAdminDashboard,
   LGA_ADMIN: LgaAdminDashboard,
   FACILITY_MANAGER: FacilityManagerDashboard,
+  NATIONAL_MAINTENANCE_MANAGER: MaintenanceOperationsDashboard,
+  STATE_MAINTENANCE_MANAGER: MaintenanceOperationsDashboard,
+  MAINTENANCE_SCHEDULER: MaintenanceOperationsDashboard,
+  TECHNICIAN: MaintenanceOperationsDashboard,
+  VENDOR_ADMIN: MaintenanceOperationsDashboard,
+  VENDOR_TECHNICIAN: MaintenanceOperationsDashboard,
 };
 
 const roleKey = computed(() => dashboard.value?.roleKey ?? primaryRoleKey(auth.user?.roles));

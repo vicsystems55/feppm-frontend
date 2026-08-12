@@ -47,12 +47,15 @@ const form = reactive({
   organizationId: '', roleId: '', scopeUnitId: '', facilityId: '', status: 'ACTIVE',
 });
 
+const roleScopeTypes = {
+  NATIONAL_ADMIN: 'NATIONAL', ZONAL_ADMIN: 'ZONE', STATE_ADMIN: 'STATE', LGA_ADMIN: 'LGA', FACILITY_MANAGER: 'LGA',
+  NATIONAL_MAINTENANCE_MANAGER: 'NATIONAL', STATE_MAINTENANCE_MANAGER: 'STATE', MAINTENANCE_SCHEDULER: 'STATE', TECHNICIAN: 'STATE', VENDOR_ADMIN: 'STATE', VENDOR_TECHNICIAN: 'STATE',
+};
+
 const permissionsTab = computed(() => route.name === 'roles-permissions');
 const selectedOrganization = computed(() => organizations.value.find((item) => item.id === form.organizationId));
 const selectedRole = computed(() => roles.value.find((item) => item.id === form.roleId));
-const scopeType = computed(() => ({
-  NATIONAL_ADMIN: 'NATIONAL', ZONAL_ADMIN: 'ZONE', STATE_ADMIN: 'STATE', LGA_ADMIN: 'LGA', FACILITY_MANAGER: 'LGA',
-}[selectedRole.value?.key] ?? null));
+const scopeType = computed(() => roleScopeTypes[selectedRole.value?.key] ?? null);
 const scopeOptions = computed(() => selectedOrganization.value?.administrativeUnits.filter((unit) => unit.type === scopeType.value) ?? []);
 const facilityOptions = computed(() => {
   const facilities = selectedOrganization.value?.facilities ?? [];
@@ -146,6 +149,8 @@ function openEdit(account) {
     organization,
     assignedFacility?.administrativeUnitId ?? account.facility?.administrativeUnitId,
   );
+  const roleKey = account.roles[0]?.key;
+  const expectedScopeType = roleScopeTypes[roleKey];
   Object.assign(form, {
     firstName: account.firstName,
     lastName: account.lastName,
@@ -154,7 +159,8 @@ function openEdit(account) {
     password: '',
     organizationId: account.organization.id,
     roleId: account.roles[0]?.id ?? '',
-    scopeUnitId: account.scopes.find((scope) => scope.type === 'LGA')?.id ?? facilityLgaId,
+    scopeUnitId: account.scopes.find((scope) => scope.type === expectedScopeType)?.id
+      ?? (roleKey === 'FACILITY_MANAGER' ? facilityLgaId : ''),
     facilityId: account.facility?.id ?? '',
     status: account.status,
   });

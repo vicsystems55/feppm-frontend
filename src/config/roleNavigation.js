@@ -33,6 +33,12 @@ import {
 
 export const ROLE_PRIORITY = [
   'SUPER_ADMIN',
+  'NATIONAL_MAINTENANCE_MANAGER',
+  'STATE_MAINTENANCE_MANAGER',
+  'MAINTENANCE_SCHEDULER',
+  'TECHNICIAN',
+  'VENDOR_ADMIN',
+  'VENDOR_TECHNICIAN',
   'NATIONAL_ADMIN',
   'ZONAL_ADMIN',
   'STATE_ADMIN',
@@ -43,6 +49,22 @@ export const ROLE_PRIORITY = [
 const dashboard = { label: 'Dashboard', icon: LayoutDashboard, to: '/' };
 const moduleItem = (label, slug, icon) => ({ label, icon, to: `/modules/${slug}` });
 const group = (label, items) => ({ label, items });
+const maintenanceOperations = moduleItem('Maintenance operations', 'maintenance-operations', Wrench);
+const maintenanceRoleNavigation = [
+  group('Overview', [dashboard, maintenanceOperations]),
+  group('Operations', [
+    moduleItem('Request queue', 'maintenance-operations?tab=requests', LifeBuoy),
+    moduleItem('Work orders', 'maintenance-operations?tab=work-orders', ClipboardList),
+    moduleItem('Technicians', 'maintenance-operations?tab=technicians', Users),
+    moduleItem('Vendor contracts', 'maintenance-operations?tab=contracts', Truck),
+  ]),
+  group('Resources', [
+    moduleItem('Equipment registry', 'equipment-registry', Boxes),
+    moduleItem('Spare parts', 'spare-parts', PackageSearch),
+    moduleItem('Documents & SOPs', 'documents', FileText),
+  ]),
+  group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
+];
 
 export const roleNavigation = {
   SUPER_ADMIN: [
@@ -55,6 +77,7 @@ export const roleNavigation = {
       moduleItem('Equipment registry', 'equipment-registry', Boxes),
     ]),
     group('Maintenance', [
+      maintenanceOperations,
       moduleItem('Checklist templates', 'checklist-templates', ClipboardCheck),
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
       moduleItem('Daily tasks', 'daily-tasks', ListChecks),
@@ -98,6 +121,7 @@ export const roleNavigation = {
       moduleItem('Equipment transfers', 'equipment-transfers', ArrowRightLeft),
     ]),
     group('Maintenance', [
+      maintenanceOperations,
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
       moduleItem('Work orders', 'work-orders', Wrench),
       moduleItem('Maintenance calendar', 'maintenance-calendar', CalendarDays),
@@ -130,6 +154,7 @@ export const roleNavigation = {
     ]),
     group('Equipment', [moduleItem('Equipment list', 'equipment-list', Boxes)]),
     group('Maintenance', [
+      maintenanceOperations,
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
       moduleItem('Work orders', 'work-orders', Wrench),
       moduleItem('Calendar', 'maintenance-calendar', CalendarDays),
@@ -152,6 +177,7 @@ export const roleNavigation = {
     ]),
     group('Equipment', [moduleItem('Equipment registry', 'equipment-registry', Boxes)]),
     group('Maintenance', [
+      maintenanceOperations,
       moduleItem('Daily tasks', 'daily-tasks', ListChecks),
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
       moduleItem('Work orders', 'work-orders', Wrench),
@@ -206,6 +232,12 @@ export const roleNavigation = {
       moduleItem('Profile', 'profile', UserRound),
     ]),
   ],
+  NATIONAL_MAINTENANCE_MANAGER: maintenanceRoleNavigation,
+  STATE_MAINTENANCE_MANAGER: maintenanceRoleNavigation,
+  MAINTENANCE_SCHEDULER: maintenanceRoleNavigation,
+  TECHNICIAN: maintenanceRoleNavigation,
+  VENDOR_ADMIN: maintenanceRoleNavigation,
+  VENDOR_TECHNICIAN: maintenanceRoleNavigation,
 };
 
 export function primaryRoleKey(roles = []) {
