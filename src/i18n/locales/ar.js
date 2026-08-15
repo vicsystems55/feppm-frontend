@@ -1,0 +1,58 @@
+export default {
+  language: { select: 'اختر اللغة' },
+  common: { user: 'مستخدم', loading: 'جارٍ التحميل…' },
+  roles: {
+    SUPER_ADMIN: 'المشرف العام', NATIONAL_MAINTENANCE_MANAGER: 'مدير الصيانة الوطني', STATE_MAINTENANCE_MANAGER: 'مدير صيانة الولاية',
+    MAINTENANCE_SCHEDULER: 'مجدول الصيانة', TECHNICIAN: 'فني', VENDOR_ADMIN: 'مسؤول المورّد', VENDOR_TECHNICIAN: 'فني المورّد',
+    NATIONAL_ADMIN: 'المسؤول الوطني', ZONAL_ADMIN: 'مسؤول المنطقة', STATE_ADMIN: 'مسؤول الولاية', LGA_ADMIN: 'مسؤول الحكومة المحلية',
+    FACILITY_MANAGER: 'مدير المنشأة',
+  },
+  navigation: {
+    primary: 'التنقل الرئيسي', open: 'فتح التنقل', close: 'إغلاق التنقل', signedInAs: 'تم تسجيل الدخول بصفة',
+    groups: {
+      overview: 'نظرة عامة', administration: 'الإدارة', maintenance: 'الصيانة', inventory: 'المخزون', monitoring: 'المراقبة',
+      reports: 'التقارير', system: 'النظام', organization: 'المؤسسة', equipment: 'المعدات', account: 'الحساب', support: 'الدعم',
+      today: 'اليوم', assets: 'الأصول', operations: 'العمليات', resources: 'الموارد',
+    },
+    items: {
+      dashboard: 'لوحة المعلومات', maintenance_operations: 'عمليات الصيانة', request_queue: 'قائمة الطلبات', work_orders: 'أوامر العمل',
+      technicians: 'الفنيون', vendor_contracts: 'عقود المورّدين', equipment_registry: 'سجل المعدات', spare_parts: 'قطع الغيار',
+      documents_and_sops: 'الوثائق وإجراءات التشغيل', notifications: 'الإشعارات', organizations: 'المؤسسات', users: 'المستخدمون',
+      roles_and_permissions: 'الأدوار والصلاحيات', facilities: 'المنشآت', checklist_templates: 'قوالب قوائم الفحص', maintenance_plans: 'خطط الصيانة',
+      daily_tasks: 'المهام اليومية', corrective_maintenance: 'الصيانة التصحيحية', maintenance_calendar: 'تقويم الصيانة', vendors: 'المورّدون',
+      procurement: 'المشتريات', issues_and_support: 'المشكلات والدعم', alerts: 'التنبيهات', equipment_health: 'حالة المعدات',
+      compliance_monitor: 'مراقبة الامتثال', national_dashboard: 'لوحة المعلومات الوطنية', analytics: 'التحليلات', exports: 'التصدير',
+      audit_logs: 'سجلات التدقيق', activity_logs: 'سجلات النشاط', settings: 'الإعدادات', zones: 'المناطق', states: 'الولايات',
+      equipment_transfers: 'نقل المعدات', national_compliance: 'الامتثال الوطني', national_reports: 'التقارير الوطنية', equipment_list: 'قائمة المعدات',
+      zone_compliance: 'امتثال المنطقة', zone_reports: 'تقارير المنطقة', lgas: 'الحكومات المحلية', state_compliance: 'امتثال الولاية',
+      state_reports: 'تقارير الولاية', weekly_tasks: 'المهام الأسبوعية', monthly_tasks: 'المهام الشهرية', task_reports: 'تقارير المهام',
+      media: 'الوسائط', todays_tasks: 'مهام اليوم', equipment: 'المعدات', daily_checklist: 'قائمة الفحص اليومية',
+      weekly_checklist: 'قائمة الفحص الأسبوعية', monthly_checklist: 'قائمة الفحص الشهرية', profile: 'الملف الشخصي',
+      calendar: 'التقويم', documents: 'الوثائق', media_library: 'مكتبة الوسائط',
+    },
+  },
+  header: {
+    searchPlaceholder: 'ابحث عن المعدات وأوامر العمل والمنشآت…', help: 'مساعدة', notifications: 'الإشعارات', unread: '{count} غير مقروء',
+    markAllRead: 'تحديد الكل كمقروء', noNotifications: 'لا توجد إشعارات حتى الآن.', viewAllNotifications: 'عرض جميع الإشعارات',
+    signOut: 'تسجيل الخروج', signingOut: 'جارٍ تسجيل الخروج…',
+  },
+  login: {
+    welcome: 'مرحبًا بعودتك!', subtitle: 'سجّل الدخول للمتابعة إلى حساب FEPPM', quickDemo: 'دخول تجريبي سريع',
+    quickDemoHint: 'اختر دورًا لملء بيانات حساب الاختبار.', demoOnly: 'للعرض فقط', email: 'البريد الإلكتروني',
+    emailPlaceholder: 'أدخل بريدك الإلكتروني', password: 'كلمة المرور', passwordPlaceholder: 'أدخل كلمة المرور',
+    showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور', rememberMe: 'تذكرني', forgotPassword: 'نسيت كلمة المرور؟',
+    signIn: 'تسجيل الدخول', signingIn: 'جارٍ تسجيل الدخول…', continueWith: 'أو المتابعة باستخدام', ssoLogin: 'تسجيل الدخول الموحد',
+    noAccount: 'ليس لديك حساب؟', contactAdministrator: 'تواصل مع المسؤول', copyright: '© 2026 FEPPM. جميع الحقوق محفوظة.',
+    privacyPolicy: 'سياسة الخصوصية', termsOfService: 'شروط الخدمة',
+  },
+  loginStories: {
+    eyebrow: 'FEPPM قيد العمل',
+    slides: {
+      field: { title: 'صيانة ذكية. منشآت أقوى.', description: 'اجمع المديرين والفنيين والعاملين الصحيين حول إجراءات الصيانة الأكثر أهمية.', alt: 'طاقم منشأة يوثّق زيارة صيانة ميدانية' },
+      coldChain: { title: 'احمِ المعدات. وحافظ على استمرار الرعاية.', description: 'خطط للعمل الوقائي وحافظ على موثوقية معدات سلسلة التبريد الحيوية للمجتمعات.', alt: 'فريق صحي بجانب معدات سلسلة التبريد' },
+      inspection: { title: 'حوّل العمل الميداني إلى أدلة موثوقة.', description: 'سجّل عمليات الفحص وسجل الصيانة وإجراءات المتابعة في نظام واحد خاضع للمساءلة.', alt: 'فريق تفتيش يراجع معدات منشأة صحية' },
+      equipment: { title: 'امنع التوقف قبل أن يعطّل الرعاية.', description: 'استخدم الجداول والتنبيهات لاكتشاف المخاطر مبكرًا وإطالة عمر الأصول وتحسين توفر المعدات.', alt: 'معدات سلسلة تبريد عاملة في منشأة صحية' },
+      facility: { title: 'منشآت أفضل. نتائج صحية أفضل.', description: 'تمنح البنية التحتية الموثوقة العاملين الصحيين البيئة والأدوات اللازمة لخدمة كل مريض.', alt: 'واجهة مركز رعاية صحية أولية' },
+    },
+  },
+};

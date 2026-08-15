@@ -8,8 +8,10 @@ import {
   Search,
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import LanguageSwitcher from '../i18n/LanguageSwitcher.vue';
 import { primaryRoleKey } from '../../config/roleNavigation.js';
 import { useAuthStore } from '../../stores/auth.js';
 import { useNotificationStore } from '../../stores/notifications.js';
@@ -19,16 +21,18 @@ defineEmits(['toggle-menu']);
 const auth = useAuthStore();
 const notifications = useNotificationStore();
 const router = useRouter();
+const { locale, t, te } = useI18n();
 const userMenuOpen = ref(false);
 const userMenuRef = ref(null);
 const notificationMenuOpen = ref(false);
 const notificationMenuRef = ref(null);
 const signingOut = ref(false);
 let notificationTimer;
-const fullName = computed(() => [auth.user?.firstName, auth.user?.lastName].filter(Boolean).join(' ') || 'User');
+const fullName = computed(() => [auth.user?.firstName, auth.user?.lastName].filter(Boolean).join(' ') || t('common.user'));
 const roleName = computed(() => {
   const roleKey = primaryRoleKey(auth.user?.roles);
-  return auth.user?.roles.find((role) => role.key === roleKey)?.name ?? 'User';
+  const key = `roles.${roleKey}`;
+  return te(key) ? t(key) : (auth.user?.roles.find((role) => role.key === roleKey)?.name ?? t('common.user'));
 });
 const initials = computed(() => [auth.user?.firstName, auth.user?.lastName]
   .filter(Boolean)
@@ -63,11 +67,12 @@ function closeMenus(event) {
 function relativeTime(value) {
   if (!value) return '';
   const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(value));
+  const formatter = new Intl.RelativeTimeFormat(locale.value, { numeric: 'auto' });
+  if (seconds < 60) return formatter.format(-seconds, 'second');
+  if (seconds < 3600) return formatter.format(-Math.floor(seconds / 60), 'minute');
+  if (seconds < 86400) return formatter.format(-Math.floor(seconds / 3600), 'hour');
+  if (seconds < 604800) return formatter.format(-Math.floor(seconds / 86400), 'day');
+  return new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium' }).format(new Date(value));
 }
 
 async function openNotification(notification) {
@@ -101,24 +106,25 @@ onBeforeUnmount(() => {
 
 <template>
   <header class="app-header">
-    <button class="menu-toggle" type="button" aria-label="Open navigation" @click="$emit('toggle-menu')">
+    <button class="menu-toggle" type="button" :aria-label="t('navigation.open')" @click="$emit('toggle-menu')">
       <Menu :size="22" />
     </button>
 
     <label class="global-search">
       <Search :size="19" />
-      <input type="search" placeholder="Search equipment, work orders, facilities..." />
+      <input type="search" :placeholder="t('header.searchPlaceholder')" />
       <kbd>⌘ K</kbd>
     </label>
 
     <div class="header-actions">
-      <button type="button" aria-label="Help"><CircleHelp :size="20" /></button>
+      <LanguageSwitcher compact />
+      <button class="help-button" type="button" :aria-label="t('header.help')"><CircleHelp :size="20" /></button>
       <div ref="notificationMenuRef" class="notification-menu-wrap">
         <button
           class="notification-button"
           :class="{ 'has-badge': notifications.unreadCount > 0 }"
           type="button"
-          aria-label="Notifications"
+          :aria-label="t('header.notifications')"
           aria-haspopup="menu"
           :aria-expanded="notificationMenuOpen"
           @click.stop="notificationMenuOpen = !notificationMenuOpen; userMenuOpen = false"
@@ -132,23 +138,23 @@ onBeforeUnmount(() => {
         <div v-if="notificationMenuOpen" class="notification-dropdown" role="menu">
           <header>
             <div>
-              <strong>Notifications</strong>
-              <span>{{ notifications.unreadCount }} unread</span>
+              <strong>{{ t('header.notifications') }}</strong>
+              <span>{{ t('header.unread', { count: notifications.unreadCount }) }}</span>
             </div>
             <button
               type="button"
               :disabled="!notifications.unreadCount"
               @click="notifications.markAllRead()"
             >
-              Mark all read
+              {{ t('header.markAllRead') }}
             </button>
           </header>
 
           <div v-if="notifications.loading && !notifications.loaded" class="notification-dropdown-state">
-            Loading…
+            {{ t('common.loading') }}
           </div>
           <div v-else-if="!notifications.latest.length" class="notification-dropdown-state">
-            You have no notifications yet.
+            {{ t('header.noNotifications') }}
           </div>
           <div v-else class="notification-dropdown-list">
             <button
@@ -169,7 +175,7 @@ onBeforeUnmount(() => {
           </div>
 
           <RouterLink to="/modules/notifications" @click="notificationMenuOpen = false">
-            View all notifications
+            {{ t('header.viewAllNotifications') }}
           </RouterLink>
         </div>
       </div>
@@ -195,7 +201,7 @@ onBeforeUnmount(() => {
         </div>
         <button role="menuitem" type="button" :disabled="signingOut" @click="signOut">
           <LogOut :size="18" />
-          {{ signingOut ? 'Signing out…' : 'Sign out' }}
+          {{ signingOut ? t('header.signingOut') : t('header.signOut') }}
         </button>
       </div>
     </div>

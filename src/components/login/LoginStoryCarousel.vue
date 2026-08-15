@@ -1,6 +1,7 @@
 <script setup>
 import { A11y, Autoplay, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { useI18n } from 'vue-i18n';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
@@ -11,40 +12,31 @@ import equipmentImage from '../../assets/images/pix (4).jpeg';
 import facilityImage from '../../assets/images/pix (5).jpeg';
 
 const modules = [A11y, Autoplay, Pagination];
+const { t } = useI18n();
 const stories = [
   {
     image: fieldTeamImage,
-    title: 'Smart maintenance. Stronger facilities.',
-    description: 'Bring managers, technicians, and health workers together around the maintenance actions that matter most.',
-    alt: 'Facility staff documenting a field maintenance visit',
+    key: 'field',
     accent: '#31ba70',
   },
   {
     image: coldChainTeamImage,
-    title: 'Protect equipment. Keep care moving.',
-    description: 'Plan preventive work and keep critical cold-chain equipment reliable for the communities that depend on it.',
-    alt: 'Health facility team standing beside cold-chain equipment',
+    key: 'coldChain',
     accent: '#63a9ff',
   },
   {
     image: inspectionImage,
-    title: 'Turn field work into trusted evidence.',
-    description: 'Capture inspections, maintenance history, and follow-up actions in one accountable system.',
-    alt: 'Field inspection team reviewing health facility equipment',
+    key: 'inspection',
     accent: '#ffad3d',
   },
   {
     image: equipmentImage,
-    title: 'Prevent downtime before it disrupts care.',
-    description: 'Use schedules and alerts to find risks early, extend asset life, and improve equipment availability.',
-    alt: 'Operational cold-chain equipment in a health facility',
+    key: 'equipment',
     accent: '#31ba70',
   },
   {
     image: facilityImage,
-    title: 'Better facilities. Better health outcomes.',
-    description: 'Reliable infrastructure gives health workers the environment and tools they need to serve every patient well.',
-    alt: 'Exterior of a primary health centre',
+    key: 'facility',
     accent: '#63a9ff',
   },
 ];
@@ -61,15 +53,15 @@ const stories = [
     :autoplay="{ delay: 5000, disableOnInteraction: false, pauseOnMouseEnter: true }"
     :pagination="{ clickable: true }"
   >
-    <SwiperSlide v-for="story in stories" :key="story.title">
+    <SwiperSlide v-for="story in stories" :key="story.key">
       <article class="login-story-slide" :style="{ '--story-accent': story.accent }">
-        <img :src="story.image" :alt="story.alt" />
+        <img :src="story.image" :alt="t(`loginStories.slides.${story.key}.alt`)" />
         <div class="login-story-slide__shade" />
         <div class="login-story-slide__content">
-          <span>FEPPM in action</span>
-          <h1>{{ story.title }}</h1>
+          <span>{{ t('loginStories.eyebrow') }}</span>
+          <h1>{{ t(`loginStories.slides.${story.key}.title`) }}</h1>
           <i aria-hidden="true" />
-          <p>{{ story.description }}</p>
+          <p>{{ t(`loginStories.slides.${story.key}.description`) }}</p>
         </div>
       </article>
     </SwiperSlide>
@@ -88,7 +80,7 @@ const stories = [
 .login-story-slide__content h1 { max-width: 460px; margin: 11px 0 0; font-size: clamp(29px, 3vw, 42px); font-weight: 650; letter-spacing: -.03em; line-height: 1.22; text-wrap: balance; }
 .login-story-slide__content i { width: 58px; height: 4px; margin: 24px 0 19px; display: block; border-radius: 4px; background: var(--story-accent); }
 .login-story-slide__content p { max-width: 430px; margin: 0; color: rgba(255,255,255,.82); font-size: 14px; line-height: 1.7; }
-.login-story-carousel :deep(.swiper-pagination) { bottom: 27px; padding: 0 clamp(34px, 5vw, 78px); text-align: left; }
+.login-story-carousel :deep(.swiper-pagination) { bottom: 27px; padding: 0 clamp(34px, 5vw, 78px); text-align: start; }
 .login-story-carousel :deep(.swiper-pagination-bullet) { width: 7px; height: 7px; margin: 0 4px; background: rgba(255,255,255,.72); opacity: .62; transition: width .2s, opacity .2s, background .2s; }
 .login-story-carousel :deep(.swiper-pagination-bullet-active) { width: 25px; border-radius: 999px; background: #fff; opacity: 1; }
 

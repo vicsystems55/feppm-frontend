@@ -1,23 +1,24 @@
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  ChevronDown,
   Eye,
   EyeOff,
-  Globe2,
   LockKeyhole,
   Mail,
   ShieldCheck,
 } from '@lucide/vue';
 
 import BrandLogo from '../components/BrandLogo.vue';
+import LanguageSwitcher from '../components/i18n/LanguageSwitcher.vue';
 import LoginStoryCarousel from '../components/login/LoginStoryCarousel.vue';
 import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 const passwordVisible = ref(false);
 const rememberMe = ref(true);
 const email = ref('');
@@ -73,26 +74,22 @@ async function submitLogin() {
       <section class="login-form-panel">
         <header class="login-panel-header">
           <BrandLogo class="mobile-login-logo" compact />
-          <button class="language-button" type="button">
-            <Globe2 :size="18" />
-            <span>English</span>
-            <ChevronDown :size="15" />
-          </button>
+          <LanguageSwitcher />
         </header>
 
         <div class="login-form-wrap">
           <div class="login-heading">
-            <h2>Welcome back!</h2>
-            <p>Sign in to continue to your FEPPM account</p>
+            <h2>{{ t('login.welcome') }}</h2>
+            <p>{{ t('login.subtitle') }}</p>
           </div>
 
           <section class="demo-login" aria-labelledby="demo-login-title">
             <div class="demo-login-heading">
               <div>
-                <h3 id="demo-login-title">Quick demo login</h3>
-                <p>Select a role to prefill its test account.</p>
+                <h3 id="demo-login-title">{{ t('login.quickDemo') }}</h3>
+                <p>{{ t('login.quickDemoHint') }}</p>
               </div>
-              <span>Demo only</span>
+              <span>{{ t('login.demoOnly') }}</span>
             </div>
 
             <div class="demo-role-grid">
@@ -108,7 +105,7 @@ async function submitLogin() {
               >
                 <span class="demo-role-mark">{{ account.shortLabel }}</span>
                 <span class="demo-role-copy">
-                  <strong>{{ account.label }}</strong>
+                  <strong>{{ t(`roles.${account.role}`, account.label) }}</strong>
                   <small>{{ account.email }}</small>
                 </span>
                 <span class="demo-role-check" aria-hidden="true">✓</span>
@@ -119,19 +116,19 @@ async function submitLogin() {
           <form class="login-form" @submit.prevent="submitLogin">
             <p v-if="errorMessage" class="login-error" role="alert" aria-live="polite">{{ errorMessage }}</p>
             <label class="form-field">
-              <span>Email address</span>
+              <span>{{ t('login.email') }}</span>
               <span class="input-wrap">
                 <Mail :size="19" />
-                <input v-model.trim="email" type="email" autocomplete="email" placeholder="Enter your email address" :disabled="submitting" required @input="selectedDemoRole = ''" />
+                <input v-model.trim="email" type="email" autocomplete="email" :placeholder="t('login.emailPlaceholder')" :disabled="submitting" required @input="selectedDemoRole = ''" />
               </span>
             </label>
 
             <label class="form-field">
-              <span>Password</span>
+              <span>{{ t('login.password') }}</span>
               <span class="input-wrap">
                 <LockKeyhole :size="19" />
-                <input v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="current-password" placeholder="Enter your password" :disabled="submitting" required @input="selectedDemoRole = ''" />
-                <button type="button" :aria-label="passwordVisible ? 'Hide password' : 'Show password'" @click="passwordVisible = !passwordVisible">
+                <input v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="current-password" :placeholder="t('login.passwordPlaceholder')" :disabled="submitting" required @input="selectedDemoRole = ''" />
+                <button type="button" :aria-label="passwordVisible ? t('login.hidePassword') : t('login.showPassword')" @click="passwordVisible = !passwordVisible">
                   <EyeOff v-if="passwordVisible" :size="19" />
                   <Eye v-else :size="19" />
                 </button>
@@ -142,34 +139,34 @@ async function submitLogin() {
               <label class="remember-option">
                 <input v-model="rememberMe" type="checkbox" />
                 <span><i>✓</i></span>
-                Remember me
+                {{ t('login.rememberMe') }}
               </label>
-              <a href="#" @click.prevent>Forgot password?</a>
+              <a href="#" @click.prevent>{{ t('login.forgotPassword') }}</a>
             </div>
 
             <button class="sign-in-button" type="submit" :disabled="submitting">
               <LockKeyhole :size="18" />
-              {{ submitting ? 'Signing in…' : 'Sign in' }}
+              {{ submitting ? t('login.signingIn') : t('login.signIn') }}
             </button>
 
-            <div class="auth-divider"><span>or continue with</span></div>
+            <div class="auth-divider"><span>{{ t('login.continueWith') }}</span></div>
 
             <div class="provider-grid">
               <button type="button"><span class="google-mark">G</span>Google</button>
               <button type="button"><span class="microsoft-mark"><i /><i /><i /><i /></span>Microsoft</button>
             </div>
 
-            <button class="sso-button" type="button"><ShieldCheck :size="19" />SSO login</button>
+            <button class="sso-button" type="button"><ShieldCheck :size="19" />{{ t('login.ssoLogin') }}</button>
           </form>
 
-          <p class="contact-admin">Don’t have an account? <a href="mailto:admin@feppm.com">Contact administrator</a></p>
+          <p class="contact-admin">{{ t('login.noAccount') }} <a href="mailto:admin@feppm.com">{{ t('login.contactAdministrator') }}</a></p>
         </div>
       </section>
     </section>
 
     <footer class="login-footer">
-      <span>© 2026 FEPPM. All rights reserved.</span>
-      <a href="#" @click.prevent>Privacy policy</a><i>•</i><a href="#" @click.prevent>Terms of service</a>
+      <span>{{ t('login.copyright') }}</span>
+      <a href="#" @click.prevent>{{ t('login.privacyPolicy') }}</a><i>•</i><a href="#" @click.prevent>{{ t('login.termsOfService') }}</a>
     </footer>
   </main>
 </template>
@@ -192,7 +189,7 @@ async function submitLogin() {
 .demo-login-heading p { margin: 2px 0 0; color: #667085; font-size: 12px; line-height: 1.4; }
 .demo-login-heading > span { padding: 4px 8px; flex: 0 0 auto; border-radius: 999px; color: #075e42; background: #dcfce7; font-size: 10px; font-weight: 700; letter-spacing: .04em; line-height: 1.3; text-transform: uppercase; }
 .demo-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.demo-role-card { position: relative; min-width: 0; min-height: 52px; padding: 8px 25px 8px 8px; display: flex; align-items: center; gap: 9px; overflow: hidden; border: 1px solid #d7e1ed; border-radius: 9px; color: #344054; background: #fff; text-align: left; cursor: pointer; transition: border-color .18s, box-shadow .18s, transform .18s, background .18s; }
+.demo-role-card { position: relative; min-width: 0; min-height: 52px; padding: 8px; padding-inline-end: 25px; display: flex; align-items: center; gap: 9px; overflow: hidden; border: 1px solid #d7e1ed; border-radius: 9px; color: #344054; background: #fff; text-align: start; cursor: pointer; transition: border-color .18s, box-shadow .18s, transform .18s, background .18s; }
 .demo-role-card:hover { border-color: #78aee9; background: #fafdff; transform: translateY(-1px); }
 .demo-role-card:focus-visible { outline: 3px solid rgba(22,112,220,.2); outline-offset: 1px; }
 .demo-role-card.selected { border-color: #1670dc; background: #eef6ff; box-shadow: 0 0 0 2px rgba(22,112,220,.1); }
@@ -203,7 +200,7 @@ async function submitLogin() {
 .demo-role-copy strong, .demo-role-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .demo-role-copy strong { color: #1d2939; font-size: 11px; font-weight: 700; line-height: 1.35; }
 .demo-role-copy small { margin-top: 2px; color: #667085; font-size: 9px; line-height: 1.3; }
-.demo-role-check { position: absolute; top: 50%; right: 8px; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 50%; color: transparent; background: #e6edf5; font-size: 10px; font-weight: 800; transform: translateY(-50%); }
+.demo-role-check { position: absolute; top: 50%; inset-inline-end: 8px; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 50%; color: transparent; background: #e6edf5; font-size: 10px; font-weight: 800; transform: translateY(-50%); }
 .demo-role-card.selected .demo-role-check { color: #fff; background: #16a163; }
 .login-form { margin-top: 24px; }
 .login-error { margin: 0 0 18px; padding: 11px 13px; border: 1px solid #f4b4ad; border-radius: 8px; color: #b42318; background: #fff1f0; font-size: 13px; line-height: 1.5; }
@@ -221,7 +218,7 @@ async function submitLogin() {
 .provider-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }.provider-grid button, .sso-button { height: 50px; display: flex; align-items: center; justify-content: center; gap: 12px; border: 1px solid #d5dce6; border-radius: 8px; background: #fff; font-size: 15px; font-weight: 500; cursor: pointer; transition: background .2s, border-color .2s; }.provider-grid button:hover, .sso-button:hover { border-color: #aebbc9; background: #f8fafc; }
 .google-mark { font-size: 21px; font-weight: 800; background: conic-gradient(from -45deg, #4285f4 0 25%, #34a853 0 45%, #fbbc05 0 67%, #ea4335 0); background-clip: text; color: transparent; }
 .microsoft-mark { width: 19px; height: 19px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }.microsoft-mark i:nth-child(1) { background: #f25022; }.microsoft-mark i:nth-child(2) { background: #7fba00; }.microsoft-mark i:nth-child(3) { background: #00a4ef; }.microsoft-mark i:nth-child(4) { background: #ffb900; }
-.sso-button { width: 100%; margin-top: 12px; }.contact-admin { margin: 34px 0 0; color: #475467; font-size: 14px; line-height: 1.5; text-align: center; }.contact-admin a { margin-left: 6px; font-weight: 600; text-transform: capitalize; }
+.sso-button { width: 100%; margin-top: 12px; }.contact-admin { margin: 34px 0 0; color: #475467; font-size: 14px; line-height: 1.5; text-align: center; }.contact-admin a { margin-inline-start: 6px; font-weight: 600; text-transform: capitalize; }
 .login-footer { min-height: 60px; padding: 0 24px; display: flex; align-items: center; justify-content: center; gap: 24px; border-top: 1px solid #edf1f5; color: #667085; background: #fff; font-size: 13px; line-height: 1.5; }.login-footer a { color: #475467; }.login-footer i { font-style: normal; }
 
 @media (max-width: 900px) {
@@ -239,7 +236,7 @@ async function submitLogin() {
   .login-panel-header { align-items: center; }.language-button span { display: none; }
   .login-form-wrap { padding: 48px 0 20px; }
   .login-heading { text-align: center; }.login-heading h2 { font-size: 28px; }.login-heading p { font-size: 14px; }
-  .demo-login { padding: 13px; text-align: left; }.demo-role-grid { grid-template-columns: 1fr; }
+  .demo-login { padding: 13px; text-align: start; }.demo-role-grid { grid-template-columns: 1fr; }
   .login-form { margin-top: 30px; }.form-field { margin-bottom: 20px; }.form-options { align-items: flex-start; }
   .provider-grid button { font-size: 0; gap: 0; }.provider-grid button > span { font-size: 21px; }
   .contact-admin { display: flex; flex-direction: column; gap: 5px; }.contact-admin a { margin: 0; }

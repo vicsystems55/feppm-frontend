@@ -6,7 +6,8 @@ import '@fontsource/poppins/latin-600.css';
 import '@fontsource/poppins/latin-700.css';
 
 import App from './App.vue';
+import i18n from './i18n/index.js';
 import router from './router/index.js';
 import './assets/main.css';
 
-createApp(App).use(createPinia()).use(router).mount('#app');
+createApp(App).use(createPinia()).use(router).use(i18n).mount('#app');

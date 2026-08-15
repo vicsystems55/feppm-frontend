@@ -1,6 +1,7 @@
 <script setup>
 import { AlertTriangle, ClipboardList, HardHat, ShieldAlert, TimerReset, Users } from '@lucide/vue';
 import { computed } from 'vue';
+import StateFacilityMap from '../../components/maintenance/StateFacilityMap.vue';
 
 const props = defineProps({ data: { type: Object, required: true }, user: { type: Object, required: true } });
 const cards = computed(() => [
@@ -24,6 +25,7 @@ const cards = computed(() => [
         <component :is="card.icon" :size="22" /><small>{{ card.label }}</small><strong>{{ card.value ?? 0 }}</strong>
       </article>
     </div>
+    <StateFacilityMap v-if="data.facilityMap?.markers?.length" :facility-map="data.facilityMap" />
   </section>
 </template>
 

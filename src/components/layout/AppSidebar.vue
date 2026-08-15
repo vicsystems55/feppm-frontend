@@ -1,6 +1,7 @@
 <script setup>
 import { Settings, Wrench, X } from '@lucide/vue';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import { navigationForRoles, primaryRoleKey } from '../../config/roleNavigation.js';
@@ -13,9 +14,13 @@ defineProps({
 const emit = defineEmits(['close']);
 const auth = useAuthStore();
 const route = useRoute();
+const { t, te } = useI18n();
 const navigation = computed(() => navigationForRoles(auth.user?.roles));
 const roleKey = computed(() => primaryRoleKey(auth.user?.roles));
-const roleName = computed(() => auth.user?.roles.find((role) => role.key === roleKey.value)?.name ?? 'User');
+const roleName = computed(() => {
+  const key = `roles.${roleKey.value}`;
+  return te(key) ? t(key) : (auth.user?.roles.find((role) => role.key === roleKey.value)?.name ?? t('common.user'));
+});
 const scopeName = computed(() => auth.user?.facility?.name ?? auth.user?.organization?.name ?? 'FEPPM');
 </script>
 
@@ -34,25 +39,25 @@ const scopeName = computed(() => auth.user?.facility?.name ?? auth.user?.organiz
         <p>Facility Electronic</p>
         <small>Planned Preventive Maintenance</small>
       </div>
-      <button class="sidebar-close" type="button" aria-label="Close navigation" @click="emit('close')">
+      <button class="sidebar-close" type="button" :aria-label="t('navigation.close')" @click="emit('close')">
         <X :size="20" />
       </button>
     </div>
 
-    <nav class="sidebar-nav" aria-label="Primary navigation">
+    <nav class="sidebar-nav" :aria-label="t('navigation.primary')">
       <section v-for="group in navigation" :key="group.label" class="nav-group">
-        <p class="nav-label">{{ group.label }}</p>
+        <p class="nav-label">{{ t(group.translationKey, group.label) }}</p>
         <RouterLink v-for="item in group.items" :key="item.label" :to="item.to" class="nav-item"
           :class="{ active: (route.meta.menuPath ?? route.fullPath) === item.to }" @click="emit('close')">
           <component :is="item.icon" :size="19" stroke-width="1.8" />
-          <span>{{ item.label }}</span>
+          <span>{{ t(item.translationKey, item.label) }}</span>
           <b v-if="item.badge" class="nav-badge">{{ item.badge }}</b>
         </RouterLink>
       </section>
     </nav>
 
     <div class="role-scope-card">
-      <span>Signed in as</span>
+      <span>{{ t('navigation.signedInAs') }}</span>
       <strong>{{ roleName }}</strong>
       <small>{{ scopeName }}</small>
     </div>

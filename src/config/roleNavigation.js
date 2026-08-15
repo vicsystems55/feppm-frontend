@@ -46,9 +46,30 @@ export const ROLE_PRIORITY = [
   'FACILITY_MANAGER',
 ];
 
-const dashboard = { label: 'Dashboard', icon: LayoutDashboard, to: '/' };
-const moduleItem = (label, slug, icon) => ({ label, icon, to: `/modules/${slug}` });
-const group = (label, items) => ({ label, items });
+const translationToken = (label) => label
+  .toLowerCase()
+  .replaceAll('&', ' and ')
+  .replaceAll("'", '')
+  .replace(/[^a-z0-9]+/g, '_')
+  .replace(/^_|_$/g, '');
+
+const dashboard = {
+  label: 'Dashboard',
+  translationKey: 'navigation.items.dashboard',
+  icon: LayoutDashboard,
+  to: '/',
+};
+const moduleItem = (label, slug, icon) => ({
+  label,
+  translationKey: `navigation.items.${translationToken(label)}`,
+  icon,
+  to: `/modules/${slug}`,
+});
+const group = (label, items) => ({
+  label,
+  translationKey: `navigation.groups.${translationToken(label)}`,
+  items,
+});
 const maintenanceOperations = moduleItem('Maintenance operations', 'maintenance-operations', Wrench);
 const maintenanceRoleNavigation = [
   group('Overview', [dashboard, maintenanceOperations]),
