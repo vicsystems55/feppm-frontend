@@ -29,7 +29,7 @@ export default {
       overview: 'Overview', administration: 'Administration', maintenance: 'Maintenance', inventory: 'Inventory',
       monitoring: 'Monitoring', reports: 'Reports', system: 'System', organization: 'Organization',
       equipment: 'Equipment', account: 'Account', support: 'Support', today: 'Today', assets: 'Assets',
-      operations: 'Operations', resources: 'Resources',
+      operations: 'Operations', resources: 'Resources', user_activities: 'User Activities', facilities: 'Facilities',
     },
     items: {
       dashboard: 'Dashboard', maintenance_operations: 'Maintenance operations', request_queue: 'Request queue',
@@ -49,6 +49,7 @@ export default {
       todays_tasks: "Today's tasks", equipment: 'Equipment', daily_checklist: 'Daily checklist',
       weekly_checklist: 'Weekly checklist', monthly_checklist: 'Monthly checklist', profile: 'Profile',
       calendar: 'Calendar', documents: 'Documents', media_library: 'Media library',
+      facility_hierarchy: 'Facility hierarchy', my_facility: 'My facility',
     },
   },
   header: {

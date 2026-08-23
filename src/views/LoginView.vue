@@ -33,6 +33,8 @@ const demoAccounts = [
   { role: 'NATIONAL_ADMIN', label: 'National Admin', shortLabel: 'NA', email: 'national.admin@feppm.demo' },
   { role: 'ZONAL_ADMIN', label: 'Zonal Admin', shortLabel: 'ZA', email: 'zonal.admin@feppm.demo' },
   { role: 'STATE_ADMIN', label: 'State Admin', shortLabel: 'STA', email: 'state.admin@feppm.demo' },
+  { role: 'STATE_MAINTENANCE_MANAGER', label: 'State Maintenance Manager', shortLabel: 'SMM', email: 'state.maintenance@feppm.demo' },
+  { role: 'TECHNICIAN', label: 'Technician', shortLabel: 'TECH', email: 'technician@feppm.demo' },
   { role: 'LGA_ADMIN', label: 'LGA Admin', shortLabel: 'LGA', email: 'lga.admin@feppm.demo' },
   { role: 'FACILITY_MANAGER', label: 'Facility Manager', shortLabel: 'FM', email: 'facility.manager@feppm.demo' },
 ];

@@ -14,6 +14,8 @@ export default {
       overview: "Vue d'ensemble", administration: 'Administration', maintenance: 'Maintenance', inventory: 'Inventaire',
       monitoring: 'Suivi', reports: 'Rapports', system: 'Système', organization: 'Organisation', equipment: 'Équipements',
       account: 'Compte', support: 'Assistance', today: "Aujourd'hui", assets: 'Actifs', operations: 'Opérations', resources: 'Ressources',
+      user_activities: 'Activités utilisateur',
+      facilities: 'Établissements',
     },
     items: {
       dashboard: 'Tableau de bord', maintenance_operations: 'Opérations de maintenance', request_queue: 'File des demandes',
@@ -32,6 +34,7 @@ export default {
       todays_tasks: "Tâches du jour", equipment: 'Équipements', daily_checklist: 'Liste quotidienne', weekly_checklist: 'Liste hebdomadaire',
       monthly_checklist: 'Liste mensuelle', profile: 'Profil',
       calendar: 'Calendrier', documents: 'Documents', media_library: 'Médiathèque',
+      facility_hierarchy: 'Hiérarchie des établissements', my_facility: 'Mon établissement',
     },
   },
   header: {

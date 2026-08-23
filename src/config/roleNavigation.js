@@ -73,16 +73,15 @@ const group = (label, items) => ({
 const maintenanceOperations = moduleItem('Maintenance operations', 'maintenance-operations', Wrench);
 const maintenanceRoleNavigation = [
   group('Overview', [dashboard, maintenanceOperations]),
+  group('Facilities', [
+    moduleItem('Facility hierarchy', 'facilities', Warehouse),
+    moduleItem('Equipment registry', 'equipment-registry', Boxes),
+  ]),
   group('Operations', [
     moduleItem('Request queue', 'maintenance-operations?tab=requests', LifeBuoy),
     moduleItem('Work orders', 'maintenance-operations?tab=work-orders', ClipboardList),
     moduleItem('Technicians', 'maintenance-operations?tab=technicians', Users),
     moduleItem('Vendor contracts', 'maintenance-operations?tab=contracts', Truck),
-  ]),
-  group('Resources', [
-    moduleItem('Equipment registry', 'equipment-registry', Boxes),
-    moduleItem('Spare parts', 'spare-parts', PackageSearch),
-    moduleItem('Documents & SOPs', 'documents', FileText),
   ]),
   group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
 ];
@@ -91,7 +90,6 @@ export const roleNavigation = {
   SUPER_ADMIN: [
     group('Overview', [dashboard]),
     group('Administration', [
-      moduleItem('Organizations', 'organizations', Building2),
       moduleItem('Users', 'users', Users),
       moduleItem('Roles & permissions', 'roles-permissions', ShieldCheck),
       moduleItem('Facilities', 'facilities', Warehouse),
@@ -132,11 +130,7 @@ export const roleNavigation = {
 
   NATIONAL_ADMIN: [
     group('Overview', [dashboard]),
-    group('Organization', [
-      moduleItem('Zones', 'zones', Map),
-      moduleItem('States', 'states', MapPinned),
-      moduleItem('Facilities', 'facilities', Warehouse),
-    ]),
+    group('Facilities', [moduleItem('Facility hierarchy', 'facilities', Warehouse)]),
     group('Equipment', [
       moduleItem('Equipment registry', 'equipment-registry', Boxes),
       moduleItem('Equipment transfers', 'equipment-transfers', ArrowRightLeft),
@@ -169,11 +163,8 @@ export const roleNavigation = {
 
   ZONAL_ADMIN: [
     group('Overview', [dashboard]),
-    group('Organization', [
-      moduleItem('States', 'states', MapPinned),
-      moduleItem('Facilities', 'facilities', Warehouse),
-    ]),
-    group('Equipment', [moduleItem('Equipment list', 'equipment-list', Boxes)]),
+    group('Facilities', [moduleItem('Facility hierarchy', 'facilities', Warehouse)]),
+    group('Equipment', [moduleItem('Equipment registry', 'equipment-registry', Boxes)]),
     group('Maintenance', [
       maintenanceOperations,
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
@@ -192,10 +183,7 @@ export const roleNavigation = {
 
   STATE_ADMIN: [
     group('Overview', [dashboard]),
-    group('Organization', [
-      moduleItem('LGAs', 'lgas', MapPinned),
-      moduleItem('Facilities', 'facilities', Warehouse),
-    ]),
+    group('Facilities', [moduleItem('Facility hierarchy', 'facilities', Warehouse)]),
     group('Equipment', [moduleItem('Equipment registry', 'equipment-registry', Boxes)]),
     group('Maintenance', [
       maintenanceOperations,
@@ -215,8 +203,8 @@ export const roleNavigation = {
 
   LGA_ADMIN: [
     group('Overview', [dashboard]),
-    group('Organization', [moduleItem('Facilities', 'facilities', Warehouse)]),
-    group('Equipment', [moduleItem('Equipment registry', 'lga-equipment', Boxes)]),
+    group('Facilities', [moduleItem('Facility hierarchy', 'facilities', Warehouse)]),
+    group('Equipment', [moduleItem('Equipment registry', 'equipment-registry', Boxes)]),
     group('Maintenance', [
       moduleItem('Daily tasks', 'lga-daily-tasks', ListChecks),
       moduleItem('Weekly tasks', 'lga-weekly-tasks', ListChecks),
@@ -236,8 +224,9 @@ export const roleNavigation = {
       dashboard,
       moduleItem("Today's tasks", 'todays-tasks', ListChecks),
     ]),
-    group('Assets', [moduleItem('Equipment', 'equipment', Boxes)]),
-    group('Maintenance', [
+    group('Facilities', [moduleItem('My facility', 'facilities', Warehouse)]),
+    group('Assets', [moduleItem('Equipment registry', 'equipment-registry', Boxes)]),
+    group('User Activities', [
       moduleItem('Daily checklist', 'daily-checklist', ClipboardCheck),
       moduleItem('Weekly checklist', 'weekly-checklist', ClipboardCheck),
       moduleItem('Monthly checklist', 'monthly-checklist', ClipboardCheck),

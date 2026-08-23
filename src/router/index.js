@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/facilities' },
     },
     {
+      path: '/modules/equipment-registry',
+      name: 'equipment-registry',
+      component: () => import('../views/LgaEquipmentView.vue'),
+      meta: { requiresAuth: true, permission: 'equipment.view', menuPath: '/modules/equipment-registry' },
+    },
+    {
       path: '/modules/checklist-templates',
       name: 'checklist-templates',
       component: () => import('../views/ChecklistManagerView.vue'),
@@ -75,9 +81,15 @@ const router = createRouter({
     },
     {
       path: '/modules/lga-equipment',
-      name: 'lga-equipment',
-      component: () => import('../views/LgaEquipmentView.vue'),
-      meta: { requiresAuth: true, menuPath: '/modules/lga-equipment' },
+      redirect: { name: 'equipment-registry' },
+    },
+    {
+      path: '/modules/equipment',
+      redirect: { name: 'equipment-registry' },
+    },
+    {
+      path: '/modules/equipment-list',
+      redirect: { name: 'equipment-registry' },
     },
     {
       path: '/modules/lga-daily-tasks',

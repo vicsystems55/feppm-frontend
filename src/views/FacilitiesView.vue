@@ -154,7 +154,7 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
       <main class="facilities-page">
         <header class="facilities-heading">
           <div>
-            <p>Organization / Facilities</p>
+            <p>Facility hierarchy</p>
             <h1>Health facilities</h1>
             <span>View and monitor every facility within {{ scopeLabel }}.</span>
           </div>
