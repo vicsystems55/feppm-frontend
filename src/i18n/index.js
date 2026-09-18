@@ -1,9 +1,11 @@
-import { createI18n } from 'vue-i18n';
+﻿import { createI18n } from 'vue-i18n';
 
 import ar from './locales/ar.js';
 import en from './locales/en.js';
 import es from './locales/es.js';
 import fr from './locales/fr.js';
+import ru from './locales/ru.js';
+import zhCN from './locales/zh-CN.js';
 
 export const LOCALE_STORAGE_KEY = 'feppm.locale';
 export const DEFAULT_LOCALE = 'en';
@@ -12,13 +14,19 @@ export const supportedLocales = [
   { code: 'fr', label: 'Français', direction: 'ltr' },
   { code: 'es', label: 'Español', direction: 'ltr' },
   { code: 'ar', label: 'العربية', direction: 'rtl' },
+  { code: 'ru', label: 'Русский', direction: 'ltr' },
+  { code: 'zh-CN', label: '简体中文', direction: 'ltr' },
 ];
 
 const supportedLocaleCodes = new Set(supportedLocales.map(({ code }) => code));
 
 function normalizeLocale(value) {
-  const code = String(value ?? '').toLowerCase().split('-')[0];
-  return supportedLocaleCodes.has(code) ? code : DEFAULT_LOCALE;
+  const rawLocale = String(value ?? '').trim();
+  const exactLocale = supportedLocales.find(({ code }) => code.toLowerCase() === rawLocale.toLowerCase());
+  if (exactLocale) return exactLocale.code;
+  if (rawLocale.toLowerCase().split('-')[0] === 'zh') return 'zh-CN';
+  const languageCode = rawLocale.toLowerCase().split('-')[0];
+  return supportedLocaleCodes.has(languageCode) ? languageCode : DEFAULT_LOCALE;
 }
 
 function detectInitialLocale() {
@@ -45,7 +53,7 @@ const i18n = createI18n({
   globalInjection: true,
   locale: initialLocale,
   fallbackLocale: DEFAULT_LOCALE,
-  messages: { en, fr, es, ar },
+  messages: { en, fr, es, ar, ru, 'zh-CN': zhCN },
 });
 
 export function setAppLocale(locale) {

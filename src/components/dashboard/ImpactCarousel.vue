@@ -1,6 +1,7 @@
 <script setup>
 import { A11y, Autoplay, Keyboard, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { useI18n } from 'vue-i18n';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
@@ -11,43 +12,14 @@ import equipmentImage from '../../assets/images/pix (4).jpeg';
 import facilityImage from '../../assets/images/pix (5).jpeg';
 
 const modules = [A11y, Autoplay, Keyboard, Pagination];
+const { t } = useI18n();
 
 const impactStories = [
-  {
-    image: fieldTeamImage,
-    eyebrow: 'Connected teams',
-    title: 'One clear view for every facility team',
-    description: 'FEPPM connects managers, technicians, and health workers around the maintenance actions that matter most.',
-    alt: 'Facility staff documenting a field maintenance visit',
-  },
-  {
-    image: coldChainTeamImage,
-    eyebrow: 'Reliable cold chain',
-    title: 'Protect essential equipment and supplies',
-    description: 'Planned checks help keep cold-chain equipment dependable and safeguard temperature-sensitive health commodities.',
-    alt: 'Health facility team standing beside cold-chain equipment',
-  },
-  {
-    image: inspectionImage,
-    eyebrow: 'Verified field work',
-    title: 'Turn every inspection into evidence',
-    description: 'Documented visits and maintenance records improve accountability, follow-up, and confidence in facility operations.',
-    alt: 'Field inspection team reviewing cold-chain equipment',
-  },
-  {
-    image: equipmentImage,
-    eyebrow: 'Preventive maintenance',
-    title: 'Find risks before equipment fails',
-    description: 'Routine schedules, alerts, and timely interventions reduce avoidable downtime and extend the life of critical assets.',
-    alt: 'Operational cold-chain equipment inside a health facility',
-  },
-  {
-    image: facilityImage,
-    eyebrow: 'Health system impact',
-    title: 'Stronger facilities support better care',
-    description: 'Reliable infrastructure gives health workers the environment and equipment they need to serve their communities.',
-    alt: 'Exterior of a primary health centre',
-  },
+  { image: fieldTeamImage, key: 'connectedTeams' },
+  { image: coldChainTeamImage, key: 'reliableColdChain' },
+  { image: inspectionImage, key: 'verifiedFieldWork' },
+  { image: equipmentImage, key: 'preventiveMaintenance' },
+  { image: facilityImage, key: 'healthSystemImpact' },
 ];
 </script>
 
@@ -55,10 +27,10 @@ const impactStories = [
   <section class="impact-showcase" aria-labelledby="impact-showcase-title">
     <header class="impact-showcase__header">
       <div>
-        <span>FEPPM in action</span>
-        <h2 id="impact-showcase-title">Maintenance that makes an impact</h2>
+        <span>{{ t('facilityDashboard.impactEyebrow') }}</span>
+        <h2 id="impact-showcase-title">{{ t('facilityDashboard.impactTitle') }}</h2>
       </div>
-      <p><i aria-hidden="true" /> Field stories · Auto-rotates</p>
+      <p><i aria-hidden="true" /> {{ t('facilityDashboard.fieldStories') }}</p>
     </header>
 
     <Swiper
@@ -78,12 +50,12 @@ const impactStories = [
     >
       <SwiperSlide v-for="story in impactStories" :key="story.title">
         <article class="impact-card">
-          <img :src="story.image" :alt="story.alt" loading="lazy" />
+          <img :src="story.image" :alt="t(`facilityDashboard.stories.${story.key}.alt`)" loading="lazy" />
           <div class="impact-card__shade" />
           <div class="impact-card__copy">
-            <span>{{ story.eyebrow }}</span>
-            <h3>{{ story.title }}</h3>
-            <p>{{ story.description }}</p>
+            <span>{{ t(`facilityDashboard.stories.${story.key}.eyebrow`) }}</span>
+            <h3>{{ t(`facilityDashboard.stories.${story.key}.title`) }}</h3>
+            <p>{{ t(`facilityDashboard.stories.${story.key}.description`) }}</p>
           </div>
         </article>
       </SwiperSlide>

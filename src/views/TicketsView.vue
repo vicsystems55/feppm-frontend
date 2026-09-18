@@ -19,6 +19,7 @@ import {
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
@@ -39,6 +40,7 @@ import { useAuthStore } from '../stores/auth.js';
 
 const auth = useAuthStore();
 const router = useRouter();
+const { locale, t, te } = useI18n();
 const sidebarOpen = ref(false);
 const loading = ref(true);
 const creating = ref(false);
@@ -79,16 +81,16 @@ const isSuperAdmin = computed(() => auth.user?.roles?.some((role) => role.key ==
 const scopeName = computed(() => auth.user?.facility?.name
   ?? auth.user?.scopes?.[0]?.name
   ?? auth.user?.organization?.name
-  ?? 'your scope');
+  ?? t('tickets.yourScope'));
 const selectedFacility = computed(() =>
   options.value.facilities.find((facility) => facility.id === form.facilityId));
 const equipmentOptions = computed(() => selectedFacility.value?.equipment ?? []);
 const priorityPreview = computed(() => previewPriority(form.impact, form.urgency));
 const summaryCards = computed(() => [
-  { label: 'All tickets', value: summary.value.total, icon: TicketCheck, tone: 'blue' },
-  { label: 'Active queue', value: summary.value.active, icon: CircleDot, tone: 'orange' },
-  { label: 'P1 critical', value: summary.value.critical, icon: ShieldAlert, tone: 'red' },
-  { label: 'Resolved', value: summary.value.resolved, icon: CheckCircle2, tone: 'green' },
+  { label: t('tickets.allTickets'), value: summary.value.total, icon: TicketCheck, tone: 'blue' },
+  { label: t('tickets.activeQueue'), value: summary.value.active, icon: CircleDot, tone: 'orange' },
+  { label: t('tickets.critical'), value: summary.value.critical, icon: ShieldAlert, tone: 'red' },
+  { label: t('tickets.resolved'), value: summary.value.resolved, icon: CheckCircle2, tone: 'green' },
 ]);
 const resultStart = computed(() => pagination.value.total
   ? ((pagination.value.page - 1) * pagination.value.limit) + 1
@@ -167,7 +169,7 @@ async function submitTicket() {
     const attachments = await uploadTicketPhotos(
       attachmentFiles.value,
       (completed, total) => {
-        uploadLabel.value = `Uploaded ${completed} of ${total} photos.`;
+        uploadLabel.value = t('tickets.uploadedPhotos', { completed, total });
       },
     );
     const data = await ticketApi.create(auth, {
@@ -179,7 +181,7 @@ async function submitTicket() {
     modalOpen.value = false;
     attachmentFiles.value = [];
     uploadLabel.value = '';
-    successMessage.value = `${data.ticket.ticketNumber} was created successfully.`;
+    successMessage.value = t('tickets.created', { ticketNumber: data.ticket.ticketNumber });
     await router.push(`/modules/issues/${data.ticket.id}`);
   } catch (error) {
     errorMessage.value = error.message;
@@ -210,6 +212,18 @@ function goToPage(page) {
 function priorityLabel(priority) {
   return `P${priority}`;
 }
+function localizedStatus(status) {
+  return te(`statuses.${status}`) ? t(`statuses.${status}`) : ticketStatusLabel(status);
+}
+
+function localizedOption(options, value, group) {
+  const key = `ticketOptions.${group}.${value}`;
+  return te(key) ? t(key) : labelFor(options, value);
+}
+
+function localizedDate(value) {
+  return value ? new Intl.DateTimeFormat(locale.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '';
+}
 
 watch(() => [filters.status, filters.priority, filters.type, filters.category], () => {
   filters.page = 1;
@@ -239,13 +253,13 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
       <main class="tickets-page">
         <section class="tickets-hero">
           <div>
-            <span>Issues &amp; support</span>
-            <h1>Ticket mission control</h1>
-            <p>Register, track and escalate operational issues across {{ scopeName }}.</p>
+            <span>{{ t('tickets.eyebrow') }}</span>
+            <h1>{{ t('tickets.title') }}</h1>
+            <p>{{ t('tickets.subtitle', { scope: scopeName }) }}</p>
           </div>
           <button v-if="canCreate" class="ticket-primary-button" type="button" @click="openCreate">
             <Plus :size="18" />
-            Register an issue
+            {{ t('tickets.register') }}
           </button>
         </section>
 
@@ -262,55 +276,52 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
         <section class="ticket-queue">
           <header>
             <div>
-              <span>Current workload</span>
-              <h2>Support ticket queue</h2>
+              <span>{{ t('tickets.workload') }}</span>
+              <h2>{{ t('tickets.queue') }}</h2>
             </div>
-            <p v-if="summary.escalated">{{ summary.escalated }} currently escalated</p>
+            <p v-if="summary.escalated">{{ t('tickets.escalated', { count: summary.escalated }) }}</p>
           </header>
 
           <div class="ticket-toolbar">
             <label class="ticket-search">
               <Search :size="18" />
-              <input v-model="filters.search" type="search" placeholder="Search ticket number, title or description" />
+              <input v-model="filters.search" type="search" :placeholder="t('tickets.search')" />
             </label>
-            <select v-model="filters.status" aria-label="Filter by status">
-              <option value="">All statuses</option>
-              <option v-for="[value, label] in ticketStatuses" :key="value" :value="value">{{ label }}</option>
+            <select v-model="filters.status" :aria-label="t('tickets.filterStatus')">
+              <option value="">{{ t('tickets.allStatuses') }}</option>
+              <option v-for="[value] in ticketStatuses" :key="value" :value="value">{{ localizedStatus(value) }}</option>
             </select>
-            <select v-model="filters.priority" aria-label="Filter by priority">
-              <option value="">All priorities</option>
-              <option value="1">P1 Critical</option>
-              <option value="2">P2 High</option>
-              <option value="3">P3 Medium</option>
-              <option value="4">P4 Low</option>
+            <select v-model="filters.priority" :aria-label="t('tickets.filterPriority')">
+              <option value="">{{ t('tickets.allPriorities') }}</option>
+              <option v-for="priority in [1, 2, 3, 4]" :key="priority" :value="priority">{{ t(`ticketOptions.priorities.P${priority}`) }}</option>
             </select>
-            <select v-model="filters.category" aria-label="Filter by category">
-              <option value="">All categories</option>
-              <option v-for="[value, label] in ticketCategories" :key="value" :value="value">{{ label }}</option>
+            <select v-model="filters.category" :aria-label="t('tickets.filterCategory')">
+              <option value="">{{ t('tickets.allCategories') }}</option>
+              <option v-for="[value] in ticketCategories" :key="value" :value="value">{{ localizedOption(ticketCategories, value, 'categories') }}</option>
             </select>
-            <button type="button" title="Reset filters" @click="resetFilters"><FilterX :size="18" /></button>
+            <button type="button" :title="t('tickets.resetFilters')" @click="resetFilters"><FilterX :size="18" /></button>
           </div>
 
           <div v-if="loading" class="ticket-loading">
-            <LoaderCircle class="spin" :size="24" /> Loading support tickets…
+            <LoaderCircle class="spin" :size="24" /> {{ t('tickets.loading') }}
           </div>
           <div v-else-if="!tickets.length" class="ticket-empty">
             <span><Headphones :size="30" /></span>
-            <h3>No tickets found</h3>
-            <p>There are no issues matching the current filters.</p>
-            <button v-if="canCreate" type="button" @click="openCreate">Register the first issue</button>
+            <h3>{{ t('tickets.empty') }}</h3>
+            <p>{{ t('tickets.emptyHint') }}</p>
+            <button v-if="canCreate" type="button" @click="openCreate">{{ t('tickets.first') }}</button>
           </div>
           <div v-else class="ticket-table-wrap">
             <table class="ticket-table">
-              <thead><tr><th>Ticket</th><th>Issue</th><th>Facility</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+              <thead><tr><th>{{ t('tickets.columns.ticket') }}</th><th>{{ t('tickets.columns.issue') }}</th><th>{{ t('tickets.columns.facility') }}</th><th>{{ t('tickets.columns.priority') }}</th><th>{{ t('tickets.columns.status') }}</th><th>{{ t('tickets.columns.updated') }}</th><th></th></tr></thead>
               <tbody>
                 <tr v-for="ticket in tickets" :key="ticket.id" @click="router.push(`/modules/issues/${ticket.id}`)">
-                  <td><strong>{{ ticket.ticketNumber }}</strong><small>{{ labelFor(ticketTypes, ticket.type) }}</small></td>
-                  <td><strong>{{ ticket.title }}</strong><small>{{ labelFor(ticketCategories, ticket.category) }} · {{ ticket._count.comments }} comments</small></td>
-                  <td><span>{{ ticket.facility?.name ?? ticket.administrativeUnit?.name ?? ticket.organization?.name ?? 'Organization-wide' }}</span><small>{{ ticket.equipment?.assetCode ?? 'No equipment linked' }}</small></td>
+                  <td><strong>{{ ticket.ticketNumber }}</strong><small>{{ localizedOption(ticketTypes, ticket.type, 'types') }}</small></td>
+                  <td><strong>{{ ticket.title }}</strong><small>{{ localizedOption(ticketCategories, ticket.category, 'categories') }} · {{ t('tickets.comments', { count: ticket._count.comments }) }}</small></td>
+                  <td><span>{{ ticket.facility?.name ?? ticket.administrativeUnit?.name ?? ticket.organization?.name ?? t('tickets.organizationWide') }}</span><small>{{ ticket.equipment?.assetCode ?? t('tickets.noEquipment') }}</small></td>
                   <td><b class="priority-pill" :class="`priority-pill--${ticket.priority}`">{{ priorityLabel(ticket.priority) }}</b></td>
-                  <td><b class="status-pill" :class="`status-pill--${ticket.status.toLowerCase()}`">{{ ticketStatusLabel(ticket.status) }}</b></td>
-                  <td><span>{{ formatTicketDate(ticket.updatedAt) }}</span><small>by {{ ticket.reportedBy.firstName }} {{ ticket.reportedBy.lastName }}</small></td>
+                  <td><b class="status-pill" :class="`status-pill--${ticket.status.toLowerCase()}`">{{ localizedStatus(ticket.status) }}</b></td>
+                  <td><span>{{ localizedDate(ticket.updatedAt) }}</span><small>{{ t('tickets.by', { name: `${ticket.reportedBy.firstName} ${ticket.reportedBy.lastName}` }) }}</small></td>
                   <td><ArrowRight :size="17" /></td>
                 </tr>
               </tbody>
@@ -318,10 +329,10 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
           </div>
 
           <footer v-if="pagination.total" class="ticket-pagination">
-            <span>Showing {{ resultStart }}–{{ resultEnd }} of {{ pagination.total }}</span>
+            <span>{{ t('tickets.showing', { start: resultStart, end: resultEnd, total: pagination.total }) }}</span>
             <div>
               <button type="button" :disabled="pagination.page <= 1" @click="goToPage(pagination.page - 1)"><ChevronLeft :size="17" /></button>
-              <b>Page {{ pagination.page }} of {{ pagination.pages }}</b>
+              <b>{{ t('tickets.page', { page: pagination.page, pages: pagination.pages }) }}</b>
               <button type="button" :disabled="pagination.page >= pagination.pages" @click="goToPage(pagination.page + 1)"><ChevronRight :size="17" /></button>
             </div>
           </footer>
@@ -332,46 +343,46 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
     <div v-if="modalOpen" class="ticket-modal" @click.self="closeCreate">
       <form @submit.prevent="submitTicket">
         <header>
-          <div><span>New support ticket</span><h2>Register an issue</h2><p>Provide enough detail for the responsible team to act quickly.</p></div>
-          <button type="button" aria-label="Close" :disabled="creating" @click="closeCreate"><X :size="21" /></button>
+          <div><span>{{ t('tickets.newEyebrow') }}</span><h2>{{ t('tickets.newTitle') }}</h2><p>{{ t('tickets.newHint') }}</p></div>
+          <button type="button" :aria-label="t('tickets.close')" :disabled="creating" @click="closeCreate"><X :size="21" /></button>
         </header>
 
         <p v-if="errorMessage" class="ticket-error ticket-modal-error">{{ errorMessage }}</p>
 
         <div class="ticket-form-grid">
-          <label v-if="isSuperAdmin">Organization
+          <label v-if="isSuperAdmin">{{ t('tickets.organization') }}
             <select v-model="form.organizationId" required @change="organizationChanged">
-              <option disabled value="">Select organization</option>
+              <option disabled value="">{{ t('tickets.selectOrganization') }}</option>
               <option v-for="organization in options.organizations" :key="organization.id" :value="organization.id">{{ organization.name }}</option>
             </select>
           </label>
-          <label>Issue type
+          <label>{{ t('tickets.issueType') }}
             <select v-model="form.type" required>
-              <option v-for="[value, label] in ticketTypes" :key="value" :value="value">{{ label }}</option>
+              <option v-for="[value] in ticketTypes" :key="value" :value="value">{{ localizedOption(ticketTypes, value, 'types') }}</option>
             </select>
           </label>
-          <label>Category
+          <label>{{ t('tickets.category') }}
             <select v-model="form.category" required>
-              <option v-for="[value, label] in ticketCategories" :key="value" :value="value">{{ label }}</option>
+              <option v-for="[value] in ticketCategories" :key="value" :value="value">{{ localizedOption(ticketCategories, value, 'categories') }}</option>
             </select>
           </label>
-          <label>Facility
+          <label>{{ t('tickets.facility') }}
             <select v-model="form.facilityId" :disabled="Boolean(auth.user?.facility?.id)">
-              <option value="">Organization or scope-wide issue</option>
+              <option value="">{{ t('tickets.scopeWideIssue') }}</option>
               <option v-for="facility in options.facilities" :key="facility.id" :value="facility.id">{{ facility.name }}</option>
             </select>
           </label>
-          <label>Equipment
+          <label>{{ t('tickets.equipment') }}
             <select v-model="form.equipmentId" :disabled="!form.facilityId || !equipmentOptions.length">
-              <option value="">{{ equipmentOptions.length ? 'No specific equipment' : 'No active equipment at this facility' }}</option>
+              <option value="">{{ equipmentOptions.length ? t('tickets.noSpecificEquipment') : t('tickets.noActiveEquipment') }}</option>
               <option v-for="equipment in equipmentOptions" :key="equipment.id" :value="equipment.id">{{ equipment.assetCode }} · {{ equipment.equipmentType.name }}</option>
             </select>
           </label>
-          <label class="ticket-form-wide">Issue title
-            <input v-model.trim="form.title" minlength="5" maxlength="160" required placeholder="A short, specific description of the issue" />
+          <label class="ticket-form-wide">{{ t('tickets.issueTitle') }}
+            <input v-model.trim="form.title" minlength="5" maxlength="160" required :placeholder="t('tickets.issueTitlePlaceholder')" />
           </label>
-          <label class="ticket-form-wide">Detailed description
-            <textarea v-model.trim="form.description" minlength="10" maxlength="10000" rows="5" required placeholder="What happened, when it started, who or what is affected, and any immediate action already taken." />
+          <label class="ticket-form-wide">{{ t('tickets.detailedDescription') }}
+            <textarea v-model.trim="form.description" minlength="10" maxlength="10000" rows="5" required :placeholder="t('tickets.detailedDescriptionPlaceholder')" />
           </label>
           <TicketPhotoPicker
             v-model="attachmentFiles"
@@ -379,31 +390,31 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
             :disabled="creating"
             :uploading-label="uploadLabel"
           />
-          <label>Impact
+          <label>{{ t('tickets.impact') }}
             <select v-model="form.impact">
-              <option v-for="[value, label] in riskLevels" :key="value" :value="value">{{ label }}</option>
+              <option v-for="[value] in riskLevels" :key="value" :value="value">{{ localizedOption(riskLevels, value, 'risk') }}</option>
             </select>
-            <small>How widely operations are affected.</small>
+            <small>{{ t('tickets.impactHint') }}</small>
           </label>
-          <label>Urgency
+          <label>{{ t('tickets.urgency') }}
             <select v-model="form.urgency">
-              <option v-for="[value, label] in riskLevels" :key="value" :value="value">{{ label }}</option>
+              <option v-for="[value] in riskLevels" :key="value" :value="value">{{ localizedOption(riskLevels, value, 'risk') }}</option>
             </select>
-            <small>How quickly action is required.</small>
+            <small>{{ t('tickets.urgencyHint') }}</small>
           </label>
           <div class="priority-preview" :class="`priority-preview--${priorityPreview}`">
             <AlertTriangle :size="22" />
-            <div><span>Calculated priority</span><strong>P{{ priorityPreview }}</strong></div>
-            <p>The server confirms priority from impact and urgency.</p>
+            <div><span>{{ t('tickets.calculatedPriority') }}</span><strong>P{{ priorityPreview }}</strong></div>
+            <p>{{ t('tickets.priorityHint') }}</p>
           </div>
         </div>
 
         <footer>
-          <button type="button" :disabled="creating" @click="closeCreate">Cancel</button>
+          <button type="button" :disabled="creating" @click="closeCreate">{{ t('tickets.cancel') }}</button>
           <button class="ticket-primary-button" type="submit" :disabled="creating">
             <LoaderCircle v-if="creating" class="spin" :size="17" />
             <MessageSquareText v-else :size="17" />
-            {{ creating ? (uploadLabel || 'Registering...') : 'Register ticket' }}
+            {{ creating ? (uploadLabel || t('tickets.registering')) : t('tickets.registerTicket') }}
           </button>
         </footer>
       </form>

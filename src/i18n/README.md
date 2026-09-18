@@ -6,8 +6,10 @@ The application uses Vue I18n in Composition API mode. English is the fallback l
 
 - `index.js` registers supported locales and owns locale persistence plus `<html lang>` / `<html dir>` updates.
 - `locales/en.js` is the source locale and fallback message catalogue.
-- `locales/fr.js`, `locales/es.js`, and `locales/ar.js` mirror the English keys.
+- `locales/fr.js`, `locales/es.js`, `locales/ar.js`, `locales/ru.js`, and `locales/zh-CN.js` provide translated catalogues.
 - `components/i18n/LanguageSwitcher.vue` is the shared locale control used on public and authenticated screens.
+
+Chinese is currently focused on the Login, Notifications, and Tickets flows. Other screens intentionally use the English fallback until they are included in a later translation slice.
 
 ## Translating a component
 

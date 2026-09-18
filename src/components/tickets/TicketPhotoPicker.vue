@@ -1,6 +1,7 @@
 <script setup>
 import { ImagePlus, Trash2 } from '@lucide/vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { MAX_TICKET_PHOTOS, validatePhotoFile } from '../../services/photoUploadService.js';
 
@@ -10,6 +11,7 @@ const props = defineProps({
   uploadingLabel: { type: String, default: '' },
 });
 const emit = defineEmits(['update:modelValue']);
+const { t } = useI18n();
 
 const input = ref(null);
 const errorMessage = ref('');
@@ -44,7 +46,7 @@ function chooseFiles(event) {
       if (!duplicate) next.push(file);
     });
     if (next.length > MAX_TICKET_PHOTOS) {
-      throw new Error(`You can attach up to ${MAX_TICKET_PHOTOS} photos.`);
+      throw new Error(t('ticketPhotos.limit', { count: MAX_TICKET_PHOTOS }));
     }
     emit('update:modelValue', next);
   } catch (error) {
@@ -66,12 +68,12 @@ onBeforeUnmount(clearPreviews);
   <div class="ticket-photo-picker">
     <div class="ticket-photo-heading">
       <div>
-        <strong>Photos</strong>
-        <span>Add up to {{ MAX_TICKET_PHOTOS }} clear images, 10 MB each.</span>
+        <strong>{{ t('ticketPhotos.title') }}</strong>
+        <span>{{ t('ticketPhotos.hint', { count: MAX_TICKET_PHOTOS }) }}</span>
       </div>
       <label :class="{ disabled }">
         <ImagePlus :size="17" />
-        Add photos
+        {{ t('ticketPhotos.add') }}
         <input
           ref="input"
           type="file"
@@ -88,7 +90,7 @@ onBeforeUnmount(clearPreviews);
 
     <div v-if="previews.length" class="ticket-photo-previews">
       <figure v-for="(item, index) in previews" :key="`${item.file.name}-${item.file.lastModified}`">
-        <img :src="item.url" :alt="`Selected image ${index + 1}: ${item.file.name}`" />
+        <img :src="item.url" :alt="t('ticketPhotos.selected', { index: index + 1, name: item.file.name })" />
         <figcaption>
           <span>{{ item.file.name }}</span>
           <small>{{ (item.file.size / (1024 * 1024)).toFixed(1) }} MB</small>
@@ -96,7 +98,7 @@ onBeforeUnmount(clearPreviews);
         <button
           type="button"
           :disabled="disabled"
-          :aria-label="`Remove ${item.file.name}`"
+          :aria-label="t('ticketPhotos.remove', { name: item.file.name })"
           @click="removeFile(index)"
         >
           <Trash2 :size="14" />

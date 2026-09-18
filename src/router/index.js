@@ -44,6 +44,30 @@ const router = createRouter({
       meta: { requiresAuth: true, permission: 'equipment.view', menuPath: '/modules/equipment-registry' },
     },
     {
+      path: '/modules/workshops',
+      name: 'maintenance-workshops',
+      component: () => import('../views/WorkshopResourcesView.vue'),
+      meta: { requiresAuth: true, permission: 'workshops.view', menuPath: '/modules/workshops', resourceTab: 'workshops' },
+    },
+    {
+      path: '/modules/spare-parts',
+      name: 'workshop-inventory',
+      component: () => import('../views/WorkshopResourcesView.vue'),
+      meta: { requiresAuth: true, permission: 'inventory.view', menuPath: '/modules/spare-parts', resourceTab: 'inventory' },
+    },
+    {
+      path: '/modules/tool-register',
+      name: 'tool-register',
+      component: () => import('../views/WorkshopResourcesView.vue'),
+      meta: { requiresAuth: true, permission: 'tools.view', menuPath: '/modules/tool-register', resourceTab: 'tools' },
+    },
+    {
+      path: '/modules/resource-requests',
+      name: 'resource-requests',
+      component: () => import('../views/ResourceRequestsView.vue'),
+      meta: { requiresAuth: true, permission: 'resource_requests.view', menuPath: '/modules/resource-requests' },
+    },
+    {
       path: '/modules/checklist-templates',
       name: 'checklist-templates',
       component: () => import('../views/ChecklistManagerView.vue'),

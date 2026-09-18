@@ -12,6 +12,9 @@ import StateAdminDashboard from './dashboards/StateAdminDashboard.vue';
 import SuperAdminDashboard from './dashboards/SuperAdminDashboard.vue';
 import ZonalAdminDashboard from './dashboards/ZonalAdminDashboard.vue';
 import MaintenanceOperationsDashboard from './dashboards/MaintenanceOperationsDashboard.vue';
+import StorekeeperDashboard from './dashboards/StorekeeperDashboard.vue';
+import WorkshopManagerDashboard from './dashboards/WorkshopManagerDashboard.vue';
+import TechnicianDashboard from './dashboards/TechnicianDashboard.vue';
 
 const auth = useAuthStore();
 const sidebarOpen = ref(false);
@@ -28,10 +31,12 @@ const dashboards = {
   FACILITY_MANAGER: FacilityManagerDashboard,
   NATIONAL_MAINTENANCE_MANAGER: MaintenanceOperationsDashboard,
   STATE_MAINTENANCE_MANAGER: MaintenanceOperationsDashboard,
+  WORKSHOP_MANAGER: WorkshopManagerDashboard,
+  STOREKEEPER: StorekeeperDashboard,
   MAINTENANCE_SCHEDULER: MaintenanceOperationsDashboard,
-  TECHNICIAN: MaintenanceOperationsDashboard,
+  TECHNICIAN: TechnicianDashboard,
   VENDOR_ADMIN: MaintenanceOperationsDashboard,
-  VENDOR_TECHNICIAN: MaintenanceOperationsDashboard,
+  VENDOR_TECHNICIAN: TechnicianDashboard,
 };
 
 const roleKey = computed(() => dashboard.value?.roleKey ?? primaryRoleKey(auth.user?.roles));

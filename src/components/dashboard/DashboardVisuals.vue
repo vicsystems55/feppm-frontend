@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { CircleCheckBig, CircleDashed, TriangleAlert, Wrench } from '@lucide/vue';
 
 const props = defineProps({
@@ -7,13 +8,14 @@ const props = defineProps({
   breakdown: { type: Array, default: () => [] },
   emptyLabel: { type: String, default: 'No records are available in this scope yet.' },
 });
+const { t } = useI18n();
 
 const statuses = computed(() => [
-  { key: 'operational', label: 'Operational', color: '#079455', icon: CircleCheckBig },
-  { key: 'underMaintenance', label: 'Under maintenance', color: '#1570ef', icon: Wrench },
-  { key: 'faulty', label: 'Faulty', color: '#f04438', icon: TriangleAlert },
-  { key: 'decommissioned', label: 'Decommissioned', color: '#98a2b3', icon: CircleDashed },
-  { key: 'offline', label: 'Unreported', color: '#344054', icon: CircleDashed },
+  { key: 'operational', label: t('facilityDashboard.operational'), color: '#079455', icon: CircleCheckBig },
+  { key: 'underMaintenance', label: t('facilityDashboard.underMaintenance'), color: '#1570ef', icon: Wrench },
+  { key: 'faulty', label: t('facilityDashboard.faulty'), color: '#f04438', icon: TriangleAlert },
+  { key: 'decommissioned', label: t('facilityDashboard.decommissioned'), color: '#98a2b3', icon: CircleDashed },
+  { key: 'offline', label: t('facilityDashboard.unreported'), color: '#344054', icon: CircleDashed },
 ].map((item) => ({ ...item, value: props.equipment?.[item.key] ?? 0 })));
 
 const total = computed(() => statuses.value.reduce((sum, item) => sum + item.value, 0));
@@ -32,14 +34,14 @@ const donut = computed(() => {
 <template>
   <div v-if="equipment !== null" class="health-summary">
     <div class="mission-donut" :style="{ background: donut }">
-      <div><strong>{{ health === null ? '—' : `${health}%` }}</strong><span>Health score</span></div>
+      <div><strong>{{ health === null ? '—' : `${health}%` }}</strong><span>{{ t('facilityDashboard.healthScore') }}</span></div>
     </div>
     <div class="health-summary__legend">
       <div v-for="item in statuses" :key="item.key">
         <i :style="{ background: item.color }" />
         <span>{{ item.label }}</span><strong>{{ item.value.toLocaleString() }}</strong>
       </div>
-      <p v-if="!total" class="mission-empty">{{ emptyLabel }}</p>
+      <p v-if="!total" class="mission-empty">{{ emptyLabel === 'No records are available in this scope yet.' ? t('facilityDashboard.noRecords') : emptyLabel }}</p>
     </div>
   </div>
 

@@ -9,6 +9,7 @@ import {
 } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
@@ -18,15 +19,14 @@ import { useNotificationStore } from '../stores/notifications.js';
 const auth = useAuthStore();
 const notifications = useNotificationStore();
 const router = useRouter();
+const { locale, t } = useI18n();
 const sidebarOpen = ref(false);
 const filter = ref('all');
 const actionError = ref('');
 const reminderTargets = ref([]);
 const reminderFacilityId = ref('');
-const reminderTitle = ref('Please update your maintenance tasks');
-const reminderMessage = ref(
-  'You have preventive maintenance work awaiting an update. Open Mazilu Fe-PPM and complete your assigned checklist.',
-);
+const reminderTitle = ref(t('notifications.reminderTitle'));
+const reminderMessage = ref(t('notifications.reminderMessage'));
 const reminderSending = ref(false);
 const reminderResult = ref('');
 
@@ -42,7 +42,7 @@ function alertDetails(notification) {
 
 function formatTimestamp(value) {
   if (!value) return '';
-  return new Intl.DateTimeFormat('en-NG', {
+  return new Intl.DateTimeFormat(locale.value, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
@@ -85,7 +85,7 @@ async function loadReminderTargets() {
   if (!auth.isSuperAdmin) return;
   const response = await auth.authorizedFetch('/notifications/task-reminder-targets');
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.message || 'Unable to load reminder targets.');
+  if (!response.ok) throw new Error(payload.message || t('notifications.loadTargetsError'));
   reminderTargets.value = payload.data?.facilities ?? [];
 }
 
@@ -104,7 +104,7 @@ async function sendReminder() {
       }),
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.message || 'Unable to send the reminder.');
+    if (!response.ok) throw new Error(payload.message || t('notifications.sendError'));
     reminderResult.value = payload.message;
   } catch (error) {
     actionError.value = error.message;
@@ -132,14 +132,14 @@ onMounted(async () => {
       <main class="notifications-page">
         <header class="notifications-heading">
           <div>
-            <span>Updates and alerts</span>
-            <h1>Notifications</h1>
-            <p>Task activity and operational updates assigned to your account.</p>
+            <span>{{ t('notifications.eyebrow') }}</span>
+            <h1>{{ t('notifications.title') }}</h1>
+            <p>{{ t('notifications.subtitle') }}</p>
           </div>
           <div class="notifications-heading__actions">
             <button type="button" :disabled="notifications.loading" @click="refresh">
               <RefreshCw :size="17" :class="{ spin: notifications.loading }" />
-              Refresh
+              {{ t('notifications.refresh') }}
             </button>
             <button
               class="primary"
@@ -148,7 +148,7 @@ onMounted(async () => {
               @click="markAllRead"
             >
               <CheckCheck :size="17" />
-              Mark all read
+              {{ t('notifications.markAllRead') }}
             </button>
           </div>
         </header>
@@ -157,15 +157,15 @@ onMounted(async () => {
           <div class="task-reminder-composer__intro">
             <span><Bell :size="21" /></span>
             <div>
-              <h2>Send task reminder</h2>
-              <p>Notify facility managers through the mobile app and notification centre.</p>
+              <h2>{{ t('notifications.sendReminder') }}</h2>
+              <p>{{ t('notifications.reminderHint') }}</p>
             </div>
           </div>
           <form @submit.prevent="sendReminder">
             <label>
-              <span>Recipients</span>
+              <span>{{ t('notifications.recipients') }}</span>
               <select v-model="reminderFacilityId">
-                <option value="">All facility managers</option>
+                <option value="">{{ t('notifications.allManagers') }}</option>
                 <option
                   v-for="facility in reminderTargets"
                   :key="facility.id"
@@ -176,11 +176,11 @@ onMounted(async () => {
               </select>
             </label>
             <label>
-              <span>Title</span>
+              <span>{{ t('common.title') }}</span>
               <input v-model.trim="reminderTitle" maxlength="160" required />
             </label>
             <label class="task-reminder-composer__message">
-              <span>Message</span>
+              <span>{{ t('common.message') }}</span>
               <textarea v-model.trim="reminderMessage" maxlength="1000" rows="3" required />
             </label>
             <div class="task-reminder-composer__actions">
@@ -188,7 +188,7 @@ onMounted(async () => {
               <button type="submit" :disabled="reminderSending">
                 <LoaderCircle v-if="reminderSending" :size="17" class="spin" />
                 <Send v-else :size="17" />
-                {{ reminderSending ? 'Sendingâ€¦' : 'Send reminder' }}
+                {{ reminderSending ? t('notifications.sending') : t('notifications.send') }}
               </button>
             </div>
           </form>
@@ -202,14 +202,14 @@ onMounted(async () => {
                 :class="{ active: filter === 'all' }"
                 @click="filter = 'all'"
               >
-                All <span>{{ notifications.items.length }}</span>
+                {{ t('notifications.all') }} <span>{{ notifications.items.length }}</span>
               </button>
               <button
                 type="button"
                 :class="{ active: filter === 'unread' }"
                 @click="filter = 'unread'"
               >
-                Unread <span>{{ notifications.unreadCount }}</span>
+                {{ t('notifications.unread') }} <span>{{ notifications.unreadCount }}</span>
               </button>
             </div>
           </div>
@@ -220,13 +220,13 @@ onMounted(async () => {
 
           <div v-if="notifications.loading && !notifications.loaded" class="notification-loading">
             <RefreshCw :size="22" class="spin" />
-            Loading notifications…
+            {{ t('notifications.loading') }}
           </div>
 
           <div v-else-if="!visibleNotifications.length" class="notification-empty">
             <span><Bell :size="30" /></span>
-            <h2>{{ filter === 'unread' ? 'You are all caught up' : 'No notifications yet' }}</h2>
-            <p>Task completions and other account updates will appear here.</p>
+            <h2>{{ filter === 'unread' ? t('notifications.caughtUp') : t('notifications.empty') }}</h2>
+            <p>{{ t('notifications.emptyHint') }}</p>
           </div>
 
           <div v-else class="notification-list">
@@ -244,7 +244,7 @@ onMounted(async () => {
               <span class="notification-row__content">
                 <span class="notification-row__title">
                   <strong>{{ alertDetails(notification).title }}</strong>
-                  <i v-if="!notification.readAt" aria-label="Unread" />
+                  <i v-if="!notification.readAt" :aria-label="t('notifications.unreadLabel')" />
                 </span>
                 <span class="notification-row__message">
                   {{ alertDetails(notification).message }}

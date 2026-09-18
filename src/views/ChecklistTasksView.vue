@@ -2,13 +2,16 @@
 import { Camera, CheckCircle2, ChevronRight, ClipboardCheck, Clock3, CloudUpload, LoaderCircle, Play, Send, Thermometer, X } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import AppHeader from '../components/layout/AppHeader.vue';
 import AppSidebar from '../components/layout/AppSidebar.vue';
+import ChecklistCalendar from '../components/checklists/ChecklistCalendar.vue';
 import { uploadChecklistPhoto } from '../services/photoUploadService.js';
 import { useAuthStore } from '../stores/auth.js';
 
 const route = useRoute();
 const auth = useAuthStore();
+const { t } = useI18n();
 const sidebarOpen = ref(false);
 const loading = ref(true);
 const submitting = ref(false);
@@ -18,11 +21,39 @@ const error = ref('');
 const message = ref('');
 const tasks = ref([]);
 const selected = ref(null);
+const selectedDate = ref('');
 const answers = ref({});
 const frequency = computed(() => ({ 'daily-checklist': 'DAILY', 'weekly-checklist': 'WEEKLY', 'monthly-checklist': 'MONTHLY', 'todays-tasks': 'DAILY' }[route.params.slug] || 'DAILY'));
-const title = computed(() => `${frequency.value[0]}${frequency.value.slice(1).toLowerCase()} checklist`);
+const title = computed(() => t(`checklistCalendar.${frequency.value.toLowerCase()}Title`));
 const template = computed(() => selected.value?.maintenanceSchedule?.checklistTemplate);
-const completed = computed(() => tasks.value.filter((task) => task.status.startsWith('COMPLETED')).length);
+const visibleTasks = computed(() => selectedDate.value
+  ? tasks.value.filter((task) => taskDate(task) === selectedDate.value)
+  : tasks.value);
+const completed = computed(() => visibleTasks.value.filter((task) => task.status.startsWith('COMPLETED')).length);
+
+function dateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function lastFriday(year, month) {
+  const date = new Date(year, month + 1, 0);
+  date.setDate(date.getDate() - ((date.getDay() + 2) % 7));
+  return date;
+}
+
+function taskDate(task) {
+  if (!task.scheduledAt) return '';
+  const date = new Date(task.scheduledAt);
+  if (frequency.value === 'WEEKLY') {
+    date.setDate(date.getDate() + ((5 - date.getDay() + 7) % 7));
+  } else if (frequency.value === 'MONTHLY') {
+    return dateKey(lastFriday(date.getFullYear(), date.getMonth()));
+  }
+  return dateKey(date);
+}
 
 async function api(path, options = {}) { const response = await auth.authorizedFetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.message || 'Unable to complete this request.'); return payload; }
 async function load() { loading.value = true; error.value = ''; selected.value = null; try { const payload = await api(`/checklists/my-tasks?frequency=${frequency.value}`); tasks.value = payload.data.tasks; } catch (loadError) { error.value = loadError.message; } finally { loading.value = false; } }
@@ -52,17 +83,21 @@ async function uploadPhoto(event, item) {
   }
 }
 async function submit() { submitting.value = true; error.value = ''; message.value = ''; try { const payload = await api(`/checklists/tasks/${selected.value.id}/submit`, { method: 'POST', body: JSON.stringify({ responses: Object.values(answers.value), submittedOffline: false }) }); message.value = payload.message; selected.value = null; await load(); } catch (submitError) { error.value = submitError.message; } finally { submitting.value = false; } }
-watch(frequency, load); onMounted(load);
+watch(frequency, () => {
+  selectedDate.value = '';
+  load();
+});
+onMounted(load);
 </script>
 
 <template>
   <div class="dashboard-shell"><AppSidebar :open="sidebarOpen" @close="sidebarOpen=false" /><div class="dashboard-main"><AppHeader @toggle-menu="sidebarOpen=!sidebarOpen" />
-    <main class="checklist-page manager-checklist"><header class="checklist-page__hero manager"><div><span>Facility Manager · Preventive maintenance</span><h1>{{ title }}</h1><p>{{ auth.user?.facility?.name || 'Your assigned facility' }}</p></div><div class="checklist-progress"><strong>{{ completed }}/{{ tasks.length }}</strong><span>completed this {{ frequency.toLowerCase() === 'daily' ? 'day' : frequency.toLowerCase().replace('ly','') }}</span></div></header>
+    <main class="checklist-page manager-checklist"><header class="checklist-page__hero manager"><div><span>{{ t('checklistCalendar.managerEyebrow') }}</span><h1>{{ title }}</h1><p>{{ auth.user?.facility?.name || t('checklistCalendar.assignedFacility') }}</p></div><div class="checklist-progress"><strong>{{ completed }}/{{ visibleTasks.length }}</strong><span>{{ t('checklistCalendar.completedInPeriod') }}</span></div></header>
       <p v-if="message" class="checklist-notice success"><CheckCircle2 :size="18" />{{ message }}</p><p v-if="error" class="checklist-notice error"><X :size="18" />{{ error }}</p>
       <div v-if="loading" class="checklist-loading"><LoaderCircle class="spin" :size="28" />Preparing your tasks…</div>
-      <section v-else-if="!selected" class="manager-task-list"><div class="task-list-heading"><div><span>Current period</span><h2>Your assigned equipment checks</h2></div><b>{{ tasks.length }} tasks</b></div>
-        <article v-for="task in tasks" :key="task.id"><span class="equipment-icon"><ClipboardCheck :size="23" /></span><div><strong>{{ task.equipment.equipmentType.name }}</strong><span>{{ task.equipment.assetCode }} · {{ task.maintenanceSchedule.checklistTemplate.items.length }} checks</span></div><span class="task-status" :class="`task-status--${task.status.toLowerCase()}`">{{ task.status.replaceAll('_',' ') }}</span><button v-if="!task.status.startsWith('COMPLETED')" type="button" @click="startTask(task)"><Play :size="16" />{{ task.status === 'IN_PROGRESS' ? 'Continue' : 'Start' }}<ChevronRight :size="16" /></button><CheckCircle2 v-else class="completed-icon" :size="23" /></article>
-        <div v-if="!tasks.length" class="checklist-empty"><ClipboardCheck :size="36" /><strong>No {{ frequency.toLowerCase() }} task is assigned</strong><span>A published template and matching registered equipment are required before tasks appear.</span></div>
+      <section v-else-if="!selected" class="manager-task-list"><ChecklistCalendar :selected-date="selectedDate" :frequency="frequency" :tasks="tasks" @update:selected-date="selectedDate = $event" /><div class="task-list-heading"><div><span>{{ t('checklistCalendar.selectedPeriod') }}</span><h2>{{ t('checklistCalendar.assignedChecks') }}</h2></div><b>{{ t('checklistCalendar.taskCount', { count: visibleTasks.length }) }}</b></div>
+        <article v-for="task in visibleTasks" :key="task.id"><span class="equipment-icon"><ClipboardCheck :size="23" /></span><div><strong>{{ task.equipment.equipmentType.name }}</strong><span>{{ task.equipment.assetCode }} · {{ t('checklistCalendar.checkCount', { count: task.maintenanceSchedule.checklistTemplate.items.length }) }}</span></div><span class="task-status" :class="`task-status--${task.status.toLowerCase()}`">{{ task.status.replaceAll('_',' ') }}</span><button v-if="!task.status.startsWith('COMPLETED')" type="button" @click="startTask(task)"><Play :size="16" />{{ task.status === 'IN_PROGRESS' ? t('checklistCalendar.continue') : t('checklistCalendar.start') }}<ChevronRight :size="16" /></button><CheckCircle2 v-else class="completed-icon" :size="23" /></article>
+        <div v-if="!visibleTasks.length" class="checklist-empty"><ClipboardCheck :size="36" /><strong>{{ t('checklistCalendar.noTaskForDate') }}</strong><span>{{ t('checklistCalendar.noTaskHint') }}</span></div>
       </section>
       <section v-else class="checklist-runner"><header><button type="button" @click="selected=null">← Back to tasks</button><div><span>{{ selected.equipment.assetCode }}</span><h2>{{ template.name }}</h2><p>{{ template.items.length }} required checks · approximately {{ template.estimatedDurationMinutes || 10 }} minutes</p></div></header>
         <form @submit.prevent="submit"><article v-for="(item,index) in template.items" :key="item.id" class="answer-card"><div class="answer-number">{{ index+1 }}</div><div class="answer-content"><span class="answer-type"><Camera v-if="item.inputType.includes('PHOTO')" :size="15" /><Thermometer v-else-if="item.inputType==='TEMPERATURE'" :size="15" /><ClipboardCheck v-else :size="15" />{{ item.inputType.replaceAll('_',' ') }}<b v-if="item.isRequired">Required</b></span><h3>{{ item.title }}</h3><p v-if="item.instruction">{{ item.instruction }}</p>

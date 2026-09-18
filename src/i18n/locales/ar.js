@@ -1,8 +1,8 @@
 export default {
   language: { select: 'اختر اللغة' },
-  common: { user: 'مستخدم', loading: 'جارٍ التحميل…' },
+  common: { title: 'العنوان', message: 'الرسالة', notRecorded: 'غير مسجل', unknownItem: 'عنصر غير معروف',  user: 'مستخدم', loading: 'جارٍ التحميل…' },
   roles: {
-    SUPER_ADMIN: 'المشرف العام', NATIONAL_MAINTENANCE_MANAGER: 'مدير الصيانة الوطني', STATE_MAINTENANCE_MANAGER: 'مدير صيانة الولاية',
+    SUPER_ADMIN: 'المشرف العام', NATIONAL_MAINTENANCE_MANAGER: 'مدير الصيانة الوطني', STATE_MAINTENANCE_MANAGER: 'مدير صيانة الولاية', WORKSHOP_MANAGER: 'مدير الورشة', STOREKEEPER: 'أمين المخزن',
     MAINTENANCE_SCHEDULER: 'مجدول الصيانة', TECHNICIAN: 'فني', VENDOR_ADMIN: 'مسؤول المورّد', VENDOR_TECHNICIAN: 'فني المورّد',
     NATIONAL_ADMIN: 'المسؤول الوطني', ZONAL_ADMIN: 'مسؤول المنطقة', STATE_ADMIN: 'مسؤول الولاية', LGA_ADMIN: 'مسؤول الحكومة المحلية',
     FACILITY_MANAGER: 'مدير المنشأة',
@@ -12,7 +12,7 @@ export default {
     groups: {
       overview: 'نظرة عامة', administration: 'الإدارة', maintenance: 'الصيانة', inventory: 'المخزون', monitoring: 'المراقبة',
       reports: 'التقارير', system: 'النظام', organization: 'المؤسسة', equipment: 'المعدات', account: 'الحساب', support: 'الدعم',
-      today: 'اليوم', assets: 'الأصول', operations: 'العمليات', resources: 'الموارد',
+      today: 'اليوم', assets: 'الأصول', operations: 'العمليات', resources: 'الموارد', user_activities: 'أنشطة المستخدم', facilities: 'المنشآت',
     },
     items: {
       dashboard: 'لوحة المعلومات', maintenance_operations: 'عمليات الصيانة', request_queue: 'قائمة الطلبات', work_orders: 'أوامر العمل',
@@ -29,6 +29,8 @@ export default {
       media: 'الوسائط', todays_tasks: 'مهام اليوم', equipment: 'المعدات', daily_checklist: 'قائمة الفحص اليومية',
       weekly_checklist: 'قائمة الفحص الأسبوعية', monthly_checklist: 'قائمة الفحص الشهرية', profile: 'الملف الشخصي',
       calendar: 'التقويم', documents: 'الوثائق', media_library: 'مكتبة الوسائط',
+      facility_hierarchy: 'التسلسل الهرمي للمنشآت', my_facility: 'منشأتي', workshop_staff: 'موظفو الورشة', workshops: 'الورش',
+      store_inventory: 'مخزون المستودع', tool_register: 'سجل الأدوات', resource_requests: 'طلبات الموارد',
     },
   },
   header: {
@@ -55,4 +57,25 @@ export default {
       facility: { title: 'منشآت أفضل. نتائج صحية أفضل.', description: 'تمنح البنية التحتية الموثوقة العاملين الصحيين البيئة والأدوات اللازمة لخدمة كل مريض.', alt: 'واجهة مركز رعاية صحية أولية' },
     },
   },
+  notifications: { eyebrow: 'التحديثات والتنبيهات', title: 'الإشعارات', subtitle: 'نشاط المهام والتحديثات التشغيلية المسندة إلى حسابك.', refresh: 'تحديث', markAllRead: 'تحديد الكل كمقروء', sendReminder: 'إرسال تذكير بالمهمة', reminderHint: 'إشعار مديري المنشآت عبر تطبيق الهاتف ومركز الإشعارات.', recipients: 'المستلمون', allManagers: 'جميع مديري المنشآت', reminderTitle: 'يرجى تحديث مهام الصيانة', reminderMessage: 'لديك أعمال صيانة وقائية تنتظر التحديث. افتح Mazilu Fe-PPM وأكمل قائمة الفحص المسندة إليك.', sending: 'جارٍ الإرسال…', send: 'إرسال التذكير', all: 'الكل', unread: 'غير مقروءة', loading: 'جارٍ تحميل الإشعارات…', caughtUp: 'اطلعت على جميع الإشعارات', empty: 'لا توجد إشعارات بعد', emptyHint: 'ستظهر هنا المهام المكتملة وتحديثات الحساب الأخرى.', unreadLabel: 'غير مقروء', loadTargetsError: 'تعذر تحميل مستلمي التذكير.', sendError: 'تعذر إرسال التذكير.' },
+  tickets: { eyebrow: 'المشكلات والدعم', title: 'مركز إدارة التذاكر', subtitle: 'سجّل المشكلات التشغيلية وتابعها وصعّدها ضمن النطاق: {scope}.', yourScope: 'نطاقك', register: 'تسجيل مشكلة', allTickets: 'جميع التذاكر', activeQueue: 'القائمة النشطة', critical: 'حرجة P1', resolved: 'تم الحل', workload: 'عبء العمل الحالي', queue: 'قائمة تذاكر الدعم', escalated: '{count} مصعّدة حالياً', search: 'البحث برقم التذكرة أو العنوان أو الوصف', allStatuses: 'جميع الحالات', allPriorities: 'جميع الأولويات', allCategories: 'جميع الفئات', resetFilters: 'إعادة ضبط عوامل التصفية', loading: 'جارٍ تحميل تذاكر الدعم…', empty: 'لم يتم العثور على تذاكر', emptyHint: 'لا توجد مشكلات تطابق عوامل التصفية الحالية.', first: 'تسجيل المشكلة الأولى', columns: { ticket: 'التذكرة', issue: 'المشكلة', facility: 'المنشأة', priority: 'الأولوية', status: 'الحالة', updated: 'آخر تحديث' }, organizationWide: 'على مستوى المؤسسة', noEquipment: 'لا يوجد جهاز مرتبط', comments: '{count} تعليق', by: 'بواسطة {name}', showing: 'عرض {start}–{end} من {total}', page: 'الصفحة {page} من {pages}' },
+  resourceRequests: { eyebrow: 'موارد الورشة', title: 'طلبات الموارد', subtitle: 'اطلب الأدوات وقطع الغيار لأعمال الصيانة المعتمدة وتابع اعتماد الورشة والمخزن.', new: 'طلب جديد', total: 'إجمالي الطلبات', workshopReview: 'مراجعة الورشة', storeReview: 'مراجعة المخزن', approvedForIssue: 'مصرح بالصرف', queueEyebrow: 'قائمة محكومة', queue: 'الطلبات ضمن نطاقك', search: 'البحث عن طلب أو أمر عمل أو شخص', allStatuses: 'جميع الحالات', loading: 'جارٍ تحميل طلبات الموارد…', empty: 'لا توجد طلبات موارد', emptyHint: 'ستظهر الطلبات عندما تتطلب أعمال الصيانة أدوات أو قطع غيار.' },
+  statuses: { SUBMITTED: 'تم الإرسال', WORKSHOP_APPROVED: 'معتمد من الورشة', AWAITING_STOCK: 'في انتظار المخزون', APPROVED_FOR_ISSUE: 'مصرح بالصرف', PARTIALLY_ISSUED: 'صُرف جزئياً', ISSUED: 'تم الصرف', COMPLETED: 'مكتمل', REJECTED: 'مرفوض', CANCELLED: 'ملغى', OPEN: 'مفتوح', ACKNOWLEDGED: 'تم الاستلام', ASSIGNED: 'مُسند', ACCEPTED: 'مقبول', IN_PROGRESS: 'قيد التنفيذ', RESOLVED: 'تم الحل', VERIFIED: 'تم التحقق', CLOSED: 'مغلق', ESCALATED: 'مصعّد', ROUTINE: 'عادي', URGENT: 'عاجل', CRITICAL: 'حرج' },
+  workshopDashboard: {
+    eyebrow: 'عمليات الورشة',
+    greeting: 'يوم سعيد، {name}',
+    subtitle: 'نسّق عمل الفنيين، وراجع نتائج العمل الميداني، واعتمد أعمال الصيانة بما يضمن المساءلة.',
+    openWorkOrders: 'فتح أوامر العمل',
+    metrics: { activeWorkOrders: 'أوامر العمل النشطة', awaitingSignOff: 'بانتظار الاعتماد النهائي', awaitingParts: 'بانتظار قطع الغيار', criticalRequests: 'الطلبات الحرجة', availableTechnicians: 'الفنيون المتاحون', awaitingApproval: 'بانتظار الموافقة' },
+    actions: {
+      workOrders: { title: 'مراجعة أوامر العمل', description: 'عيّن الفنيين، وتابع التقدم، وراجع تقارير الإنجاز المقدمة.' },
+      technicians: { title: 'توفر الفنيين', description: 'اطّلع على الملفات الفنية والمهارات والأفراد المتاحين للتكليف.' },
+      facilityRequests: { title: 'طلبات المرافق', description: 'راجع المشكلات والسياق الفني المرتبطين بأوامر عمل الورشة.' },
+      readiness: { title: 'جاهزية الورشة', description: 'راجع الموظفين المكلفين والمخازن ومتطلبات مجموعة أدوات التبريد الأساسية.' },
+      inventory: { title: 'مخزون المستودع', description: 'تابع أرصدة قطع الغيار الموثقة ومدى توفرها لأعمال الصيانة.' },
+      tools: { title: 'سجل الأدوات', description: 'راجع عهدة الأدوات وحالتها ومواعيد تدقيقها ومدى توفرها في الورشة.' },
+      resources: { title: 'طلبات الموارد', description: 'اعتمد الكميات المطلوبة قبل أن يؤكد أمين المخزن توفرها.' },
+    },
+  },
+  ticketPhotos: { title: 'الصور', hint: 'أضف ما يصل إلى {count} صور واضحة، بحجم 10 ميغابايت لكل صورة.', add: 'إضافة صور', selected: 'الصورة المحددة {index}: {name}', remove: 'إزالة {name}', limit: 'يمكنك إرفاق ما يصل إلى {count} صور.' },
 };

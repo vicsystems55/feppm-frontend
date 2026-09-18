@@ -1,9 +1,9 @@
 export default {
   language: { select: 'Choisir la langue' },
-  common: { user: 'Utilisateur', loading: 'Chargement…' },
+  common: { title: 'Titre', message: 'Message', notRecorded: 'Non renseigné', unknownItem: 'Élément inconnu',  user: 'Utilisateur', loading: 'Chargement…' },
   roles: {
     SUPER_ADMIN: 'Super administrateur', NATIONAL_MAINTENANCE_MANAGER: 'Responsable national de la maintenance',
-    STATE_MAINTENANCE_MANAGER: 'Responsable régional de la maintenance', MAINTENANCE_SCHEDULER: 'Planificateur de maintenance',
+    STATE_MAINTENANCE_MANAGER: 'Responsable régional de la maintenance', WORKSHOP_MANAGER: "Responsable d'atelier", STOREKEEPER: 'Magasinier', MAINTENANCE_SCHEDULER: 'Planificateur de maintenance',
     TECHNICIAN: 'Technicien', VENDOR_ADMIN: 'Administrateur fournisseur', VENDOR_TECHNICIAN: 'Technicien fournisseur',
     NATIONAL_ADMIN: 'Administrateur national', ZONAL_ADMIN: 'Administrateur de zone', STATE_ADMIN: 'Administrateur régional',
     LGA_ADMIN: 'Administrateur LGA', FACILITY_MANAGER: "Responsable d'établissement",
@@ -35,6 +35,7 @@ export default {
       monthly_checklist: 'Liste mensuelle', profile: 'Profil',
       calendar: 'Calendrier', documents: 'Documents', media_library: 'Médiathèque',
       facility_hierarchy: 'Hiérarchie des établissements', my_facility: 'Mon établissement',
+      workshop_staff: 'Personnel de l’atelier', workshops: 'Ateliers', store_inventory: 'Stock du magasin', tool_register: 'Registre des outils', resource_requests: 'Demandes de ressources',
     },
   },
   header: {
@@ -61,4 +62,25 @@ export default {
       facility: { title: 'De meilleurs établissements. De meilleurs résultats de santé.', description: 'Une infrastructure fiable donne aux agents de santé les moyens de bien servir chaque patient.', alt: "Extérieur d'un centre de santé primaire" },
     },
   },
+  notifications: { eyebrow: 'Mises à jour et alertes', title: 'Notifications', subtitle: 'Activités des tâches et mises à jour opérationnelles affectées à votre compte.', refresh: 'Actualiser', markAllRead: 'Tout marquer comme lu', sendReminder: 'Envoyer un rappel de tâche', reminderHint: 'Notifier les responsables des établissements via application mobile et le centre de notifications.', recipients: 'Destinataires', allManagers: 'Tous les responsables des établissements', reminderTitle: 'Veuillez mettre à jour vos tâches de maintenance', reminderMessage: 'Des travaux de maintenance préventive attendent une mise à jour. Ouvrez Mazilu Fe-PPM et remplissez la liste de contrôle assignée.', sending: 'Envoi…', send: 'Envoyer le rappel', all: 'Toutes', unread: 'Non lues', loading: 'Chargement des notifications…', caughtUp: 'Vous êtes à jour', empty: 'Aucune notification', emptyHint: 'Les tâches terminées et autres mises à jour de compte apparaîtront ici.', unreadLabel: 'Non lue', loadTargetsError: 'Impossible de charger les destinataires du rappel.', sendError: 'Impossible de transmettre le rappel.' },
+  tickets: { eyebrow: 'Incidents et assistance', title: 'Centre de gestion des tickets', subtitle: 'Enregistrez, suivez et escaladez les problèmes opérationnels dans le périmètre : {scope}.', yourScope: 'votre périmètre', register: 'Signaler un problème', allTickets: 'Tous les tickets', activeQueue: 'File active', critical: 'Critiques P1', resolved: 'Résolus', workload: 'Charge actuelle', queue: 'File des tickets de support', escalated: '{count} actuellement escaladé(s)', search: 'Rechercher un numéro, un titre ou une description', allStatuses: 'Tous les statuts', allPriorities: 'Toutes les priorités', allCategories: 'Toutes les catégories', resetFilters: 'Réinitialiser les filtres', loading: 'Chargement des tickets…', empty: 'Aucun ticket trouvé', emptyHint: 'Aucun problème ne correspond aux filtres actuels.', first: 'Signaler le premier problème', columns: { ticket: 'Ticket', issue: 'Problème', facility: 'Établissement', priority: 'Priorité', status: 'Statut', updated: 'Mis à jour' }, organizationWide: 'Toute organisation', noEquipment: 'Aucun équipement associé', comments: '{count} commentaire(s)', by: 'par {name}', showing: 'Affichage de {start} à {end} sur {total}', page: 'Page {page} sur {pages}' },
+  resourceRequests: { eyebrow: 'Ressources atelier', title: 'Demandes de ressources', subtitle: 'Demandez des outils et pièces pour les travaux approuvés, puis suivez les validations atelier et magasin.', new: 'Nouvelle demande', total: 'Total des demandes', workshopReview: 'Validation atelier', storeReview: 'Validation magasin', approvedForIssue: 'Autorisé à sortir', queueEyebrow: 'File contrôlée', queue: 'Demandes dans votre périmètre', search: 'Rechercher une demande, un ordre ou une personne', allStatuses: 'Tous les statuts', loading: 'Chargement des demandes…', empty: 'Aucune demande de ressources', emptyHint: 'Les demandes apparaîtront lorsque les travaux nécessiteront des outils ou des pièces.' },
+  statuses: { SUBMITTED: 'Soumis', WORKSHOP_APPROVED: 'Approuvé par atelier', AWAITING_STOCK: 'En attente de stock', APPROVED_FOR_ISSUE: 'Autorisé à sortir', PARTIALLY_ISSUED: 'Partiellement sorti', ISSUED: 'Sorti', COMPLETED: 'Terminé', REJECTED: 'Rejeté', CANCELLED: 'Annulé', OPEN: 'Ouvert', ACKNOWLEDGED: 'Pris en compte', ASSIGNED: 'Affecté', ACCEPTED: 'Accepté', IN_PROGRESS: 'En cours', RESOLVED: 'Résolu', VERIFIED: 'Vérifié', CLOSED: 'Fermé', ESCALATED: 'Escaladé', ROUTINE: 'Routine', URGENT: 'Urgent', CRITICAL: 'Critique' },
+  workshopDashboard: {
+    eyebrow: "Opérations de l’atelier",
+    greeting: 'Bonjour, {name}',
+    subtitle: 'Coordonnez les techniciens, examinez les conclusions du terrain et validez les travaux de maintenance de manière responsable.',
+    openWorkOrders: 'Ouvrir les ordres de travail',
+    metrics: { activeWorkOrders: 'Ordres de travail actifs', awaitingSignOff: 'En attente de validation', awaitingParts: 'En attente de pièces', criticalRequests: 'Demandes critiques', availableTechnicians: 'Techniciens disponibles', awaitingApproval: 'En attente d’approbation' },
+    actions: {
+      workOrders: { title: 'Examiner les ordres de travail', description: 'Affectez les techniciens, suivez l’avancement et examinez les rapports de fin de travaux.' },
+      technicians: { title: 'Disponibilité des techniciens', description: 'Consultez les profils techniques, les compétences et le personnel disponible pour une affectation.' },
+      facilityRequests: { title: 'Demandes des établissements', description: 'Examinez les préoccupations et le contexte technique liés aux ordres de travail de l’atelier.' },
+      readiness: { title: 'Préparation de l’atelier', description: 'Examinez le personnel affecté, les magasins et les exigences de base en outillage frigorifique.' },
+      inventory: { title: 'Stock du magasin', description: 'Suivez les soldes vérifiés des pièces détachées et leur disponibilité pour les travaux.' },
+      tools: { title: 'Registre des outils', description: 'Examinez la garde, l’état, les dates d’audit et la disponibilité des outils.' },
+      resources: { title: 'Demandes de ressources', description: 'Approuvez les quantités demandées avant la confirmation de disponibilité par le magasinier.' },
+    },
+  },
+  ticketPhotos: { title: 'Photos', hint: 'Ajoutez jusqu’à {count} images nettes de 10 Mo chacune.', add: 'Ajouter des photos', selected: 'Image sélectionnée {index} : {name}', remove: 'Supprimer {name}', limit: 'Vous pouvez joindre jusqu’à {count} photos.' },
 };

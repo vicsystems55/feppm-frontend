@@ -7,10 +7,14 @@ import {
   ClipboardList,
   HardHat,
   MapPinned,
+  PackagePlus,
   ShieldAlert,
+  Store,
   TimerReset,
   Truck,
   Users,
+  Warehouse,
+  Wrench,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import StateFacilityMap from '../../components/maintenance/StateFacilityMap.vue';
@@ -82,6 +86,38 @@ const maintenanceModules = [
     icon: Boxes,
     tone: 'indigo',
     to: '/modules/equipment-registry',
+  },
+  {
+    title: 'Maintenance workshops',
+    stage: 'Workshop coordination',
+    description: 'Review state workshop staffing, stores and required refrigeration toolkit readiness.',
+    icon: Warehouse,
+    tone: 'blue',
+    to: '/modules/workshops',
+  },
+  {
+    title: 'Store inventory',
+    stage: 'Stock control',
+    description: 'Monitor verified spare-part balances, reservations, movements and reorder exposure.',
+    icon: Store,
+    tone: 'green',
+    to: '/modules/spare-parts',
+  },
+  {
+    title: 'Tool register',
+    stage: 'Tool custody',
+    description: 'Receive, issue, return and audit uniquely tagged workshop tools with full history.',
+    icon: Wrench,
+    tone: 'orange',
+    to: '/modules/tool-register',
+  },
+  {
+    title: 'Resource requests',
+    stage: 'Authorize resources',
+    description: 'Review workshop tool and spare-part requests linked to active maintenance work orders.',
+    icon: PackagePlus,
+    tone: 'purple',
+    to: '/modules/resource-requests',
   },
 ];
 </script>

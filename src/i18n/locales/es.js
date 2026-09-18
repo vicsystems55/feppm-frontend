@@ -1,9 +1,9 @@
 export default {
   language: { select: 'Seleccionar idioma' },
-  common: { user: 'Usuario', loading: 'Cargando…' },
+  common: { title: 'Título', message: 'Mensaje', notRecorded: 'No registrado', unknownItem: 'Elemento desconocido',  user: 'Usuario', loading: 'Cargando…' },
   roles: {
     SUPER_ADMIN: 'Superadministrador', NATIONAL_MAINTENANCE_MANAGER: 'Responsable nacional de mantenimiento',
-    STATE_MAINTENANCE_MANAGER: 'Responsable estatal de mantenimiento', MAINTENANCE_SCHEDULER: 'Planificador de mantenimiento',
+    STATE_MAINTENANCE_MANAGER: 'Responsable estatal de mantenimiento', WORKSHOP_MANAGER: 'Jefe de taller', STOREKEEPER: 'Encargado de almacén', MAINTENANCE_SCHEDULER: 'Planificador de mantenimiento',
     TECHNICIAN: 'Técnico', VENDOR_ADMIN: 'Administrador de proveedor', VENDOR_TECHNICIAN: 'Técnico de proveedor',
     NATIONAL_ADMIN: 'Administrador nacional', ZONAL_ADMIN: 'Administrador zonal', STATE_ADMIN: 'Administrador estatal',
     LGA_ADMIN: 'Administrador de LGA', FACILITY_MANAGER: 'Responsable de instalación',
@@ -13,7 +13,7 @@ export default {
     groups: {
       overview: 'Resumen', administration: 'Administración', maintenance: 'Mantenimiento', inventory: 'Inventario', monitoring: 'Supervisión',
       reports: 'Informes', system: 'Sistema', organization: 'Organización', equipment: 'Equipos', account: 'Cuenta', support: 'Soporte',
-      today: 'Hoy', assets: 'Activos', operations: 'Operaciones', resources: 'Recursos',
+      today: 'Hoy', assets: 'Activos', operations: 'Operaciones', resources: 'Recursos', user_activities: 'Actividades del usuario', facilities: 'Instalaciones',
     },
     items: {
       dashboard: 'Panel', maintenance_operations: 'Operaciones de mantenimiento', request_queue: 'Cola de solicitudes',
@@ -32,6 +32,8 @@ export default {
       todays_tasks: 'Tareas de hoy', equipment: 'Equipos', daily_checklist: 'Lista diaria', weekly_checklist: 'Lista semanal',
       monthly_checklist: 'Lista mensual', profile: 'Perfil',
       calendar: 'Calendario', documents: 'Documentos', media_library: 'Biblioteca multimedia',
+      facility_hierarchy: 'Jerarquía de instalaciones', my_facility: 'Mi instalación', workshop_staff: 'Personal del taller', workshops: 'Talleres',
+      store_inventory: 'Inventario del almacén', tool_register: 'Registro de herramientas', resource_requests: 'Solicitudes de recursos',
     },
   },
   header: {
@@ -58,4 +60,25 @@ export default {
       facility: { title: 'Mejores instalaciones. Mejores resultados de salud.', description: 'Una infraestructura fiable brinda al personal de salud el entorno y las herramientas que necesita.', alt: 'Exterior de un centro de salud primaria' },
     },
   },
+  notifications: { eyebrow: 'Actualizaciones y alertas', title: 'Notificaciones', subtitle: 'Actividad de tareas y actualizaciones operativas asignadas a su cuenta.', refresh: 'Actualizar', markAllRead: 'Marcar todo como leído', sendReminder: 'Enviar recordatorio de tarea', reminderHint: 'Notificar a los responsables de centros mediante la aplicación móvil y el centro de notificaciones.', recipients: 'Destinatarios', allManagers: 'Todos los responsables de centros', reminderTitle: 'Actualice sus tareas de mantenimiento', reminderMessage: 'Tiene mantenimiento preventivo pendiente de actualización. Abra Mazilu Fe-PPM y complete la lista asignada.', sending: 'Enviando…', send: 'Enviar recordatorio', all: 'Todas', unread: 'No leídas', loading: 'Cargando notificaciones…', caughtUp: 'Todo está al día', empty: 'Aún no hay notificaciones', emptyHint: 'Las tareas completadas y otras actualizaciones aparecerán aquí.', unreadLabel: 'No leída', loadTargetsError: 'No se pudieron cargar los destinatarios.', sendError: 'No se pudo enviar el recordatorio.' },
+  tickets: { eyebrow: 'Incidencias y soporte', title: 'Centro de control de tickets', subtitle: 'Registre, siga y escale problemas operativos en el ámbito: {scope}.', yourScope: 'su ámbito', register: 'Registrar una incidencia', allTickets: 'Todos los tickets', activeQueue: 'Cola activa', critical: 'Críticos P1', resolved: 'Resueltos', workload: 'Carga actual', queue: 'Cola de tickets de soporte', escalated: '{count} escalado(s) actualmente', search: 'Buscar número, título o descripción', allStatuses: 'Todos los estados', allPriorities: 'Todas las prioridades', allCategories: 'Todas las categorías', resetFilters: 'Restablecer filtros', loading: 'Cargando tickets…', empty: 'No se encontraron tickets', emptyHint: 'No hay incidencias que coincidan con los filtros.', first: 'Registrar la primera incidencia', columns: { ticket: 'Ticket', issue: 'Incidencia', facility: 'Centro', priority: 'Prioridad', status: 'Estado', updated: 'Actualizado' }, organizationWide: 'Toda la organización', noEquipment: 'Sin equipo asociado', comments: '{count} comentario(s)', by: 'por {name}', showing: 'Mostrando {start}–{end} de {total}', page: 'Página {page} de {pages}' },
+  resourceRequests: { eyebrow: 'Recursos del taller', title: 'Solicitudes de recursos', subtitle: 'Solicite herramientas y repuestos para trabajos aprobados y siga la autorización de taller y almacén.', new: 'Nueva solicitud', total: 'Total de solicitudes', workshopReview: 'Revisión del taller', storeReview: 'Revisión del almacén', approvedForIssue: 'Autorizado para entrega', queueEyebrow: 'Cola controlada', queue: 'Solicitudes en su ámbito', search: 'Buscar solicitud, orden o persona', allStatuses: 'Todos los estados', loading: 'Cargando solicitudes…', empty: 'No se encontraron solicitudes', emptyHint: 'Las solicitudes aparecerán cuando el trabajo requiera herramientas o repuestos.' },
+  statuses: { SUBMITTED: 'Enviado', WORKSHOP_APPROVED: 'Aprobado por el taller', AWAITING_STOCK: 'Esperando existencias', APPROVED_FOR_ISSUE: 'Autorizado para entrega', PARTIALLY_ISSUED: 'Entregado parcialmente', ISSUED: 'Entregado', COMPLETED: 'Completado', REJECTED: 'Rechazado', CANCELLED: 'Cancelado', OPEN: 'Abierto', ACKNOWLEDGED: 'Reconocido', ASSIGNED: 'Asignado', ACCEPTED: 'Aceptado', IN_PROGRESS: 'En curso', RESOLVED: 'Resuelto', VERIFIED: 'Verificado', CLOSED: 'Cerrado', ESCALATED: 'Escalado', ROUTINE: 'Rutina', URGENT: 'Urgente', CRITICAL: 'Crítica' },
+  workshopDashboard: {
+    eyebrow: 'Operaciones del taller',
+    greeting: 'Buen día, {name}',
+    subtitle: 'Coordina a los técnicos, revisa las conclusiones de campo y valida el trabajo de mantenimiento con responsabilidad.',
+    openWorkOrders: 'Abrir órdenes de trabajo',
+    metrics: { activeWorkOrders: 'Órdenes de trabajo activas', awaitingSignOff: 'Pendientes de validación', awaitingParts: 'Pendientes de repuestos', criticalRequests: 'Solicitudes críticas', availableTechnicians: 'Técnicos disponibles', awaitingApproval: 'Pendientes de aprobación' },
+    actions: {
+      workOrders: { title: 'Revisar órdenes de trabajo', description: 'Asigna técnicos, supervisa el progreso y revisa los informes de finalización enviados.' },
+      technicians: { title: 'Disponibilidad de técnicos', description: 'Consulta perfiles técnicos, habilidades y personal disponible para asignación.' },
+      facilityRequests: { title: 'Solicitudes de instalaciones', description: 'Revisa los problemas y el contexto técnico vinculados a las órdenes de trabajo del taller.' },
+      readiness: { title: 'Preparación del taller', description: 'Revisa el personal asignado, los almacenes y los requisitos básicos de herramientas de refrigeración.' },
+      inventory: { title: 'Inventario del almacén', description: 'Supervisa los saldos verificados de repuestos y su disponibilidad para mantenimiento.' },
+      tools: { title: 'Registro de herramientas', description: 'Revisa la custodia, el estado, las fechas de auditoría y la disponibilidad de herramientas.' },
+      resources: { title: 'Solicitudes de recursos', description: 'Aprueba las cantidades solicitadas antes de que el encargado del almacén confirme la disponibilidad.' },
+    },
+  },
+  ticketPhotos: { title: 'Fotos', hint: 'Añada hasta {count} imágenes claras de 10 MB cada una.', add: 'Añadir fotos', selected: 'Imagen seleccionada {index}: {name}', remove: 'Eliminar {name}', limit: 'Puede adjuntar hasta {count} fotos.' },
 };

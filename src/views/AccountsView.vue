@@ -49,10 +49,13 @@ const form = reactive({
 
 const roleScopeTypes = {
   NATIONAL_ADMIN: 'NATIONAL', ZONAL_ADMIN: 'ZONE', STATE_ADMIN: 'STATE', LGA_ADMIN: 'LGA', FACILITY_MANAGER: 'LGA',
-  NATIONAL_MAINTENANCE_MANAGER: 'NATIONAL', STATE_MAINTENANCE_MANAGER: 'STATE', MAINTENANCE_SCHEDULER: 'STATE', TECHNICIAN: 'STATE', VENDOR_ADMIN: 'STATE', VENDOR_TECHNICIAN: 'STATE',
+  NATIONAL_MAINTENANCE_MANAGER: 'NATIONAL', STATE_MAINTENANCE_MANAGER: 'STATE', WORKSHOP_MANAGER: 'STATE', STOREKEEPER: 'STATE', MAINTENANCE_SCHEDULER: 'STATE', TECHNICIAN: 'STATE', VENDOR_ADMIN: 'STATE', VENDOR_TECHNICIAN: 'STATE',
 };
 
 const permissionsTab = computed(() => route.name === 'roles-permissions');
+const canManagePermissions = computed(() => auth.user?.permissions?.includes('roles.manage'));
+const maintenanceStaffMode = computed(() => auth.user?.roles?.some((role) => role.key === 'STATE_MAINTENANCE_MANAGER')
+  && !auth.user?.roles?.some((role) => role.key === 'SUPER_ADMIN'));
 const selectedOrganization = computed(() => organizations.value.find((item) => item.id === form.organizationId));
 const selectedRole = computed(() => roles.value.find((item) => item.id === form.roleId));
 const scopeType = computed(() => roleScopeTypes[selectedRole.value?.key] ?? null);
@@ -126,11 +129,16 @@ async function loadAccounts(page = 1) {
 }
 
 function clearForm() {
+  const organizationId = organizations.value[0]?.id ?? '';
+  const defaultRole = roles.value.find((role) => role.key === 'WORKSHOP_MANAGER') ?? roles.value[0];
+  const organization = organizations.value.find((item) => item.id === organizationId);
+  const expectedScope = roleScopeTypes[defaultRole?.key];
+  const availableScopes = organization?.administrativeUnits.filter((unit) => unit.type === expectedScope) ?? [];
   Object.assign(form, {
     firstName: '', lastName: '', email: '', phone: '', password: '',
-    organizationId: organizations.value[0]?.id ?? '',
-    roleId: roles.value.find((role) => role.key === 'STATE_ADMIN')?.id ?? roles.value[0]?.id ?? '',
-    scopeUnitId: '', facilityId: '', status: 'ACTIVE',
+    organizationId,
+    roleId: defaultRole?.id ?? '',
+    scopeUnitId: availableScopes.length === 1 ? availableScopes[0].id : '', facilityId: '', status: 'ACTIVE',
   });
   editingId.value = null;
   formError.value = '';
@@ -169,12 +177,14 @@ function openEdit(account) {
 }
 
 function organizationChanged() {
-  form.scopeUnitId = '';
+  const availableScopes = scopeOptions.value;
+  form.scopeUnitId = availableScopes.length === 1 ? availableScopes[0].id : '';
   form.facilityId = '';
 }
 
 function roleChanged() {
-  form.scopeUnitId = '';
+  const availableScopes = scopeOptions.value;
+  form.scopeUnitId = availableScopes.length === 1 ? availableScopes[0].id : '';
   form.facilityId = '';
 }
 
@@ -252,13 +262,13 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
       <AppHeader @toggle-menu="sidebarOpen = !sidebarOpen" />
       <main class="accounts-page">
         <header class="accounts-heading">
-          <div><p>Administration</p><h1>Accounts & access</h1><span>Manage login accounts, roles, permissions and organizational scope.</span></div>
-          <button v-if="!permissionsTab" type="button" @click="openCreate"><Plus :size="18" /> Create account</button>
+          <div><p>{{ maintenanceStaffMode ? 'State maintenance' : 'Administration' }}</p><h1>{{ maintenanceStaffMode ? 'Workshop staff' : 'Accounts & access' }}</h1><span>{{ maintenanceStaffMode ? 'Add and manage Workshop Managers and Storekeepers in your assigned state.' : 'Manage login accounts, roles, permissions and organizational scope.' }}</span></div>
+          <button v-if="!permissionsTab" type="button" @click="openCreate"><Plus :size="18" /> {{ maintenanceStaffMode ? 'Add workshop staff' : 'Create account' }}</button>
         </header>
 
         <nav class="access-tabs">
-          <RouterLink to="/modules/users"><Users :size="17" /> Login accounts</RouterLink>
-          <RouterLink to="/modules/roles-permissions"><ShieldCheck :size="17" /> Roles & permissions</RouterLink>
+          <RouterLink to="/modules/users"><Users :size="17" /> {{ maintenanceStaffMode ? 'Workshop staff' : 'Login accounts' }}</RouterLink>
+          <RouterLink v-if="canManagePermissions" to="/modules/roles-permissions"><ShieldCheck :size="17" /> Roles & permissions</RouterLink>
         </nav>
 
         <p v-if="successMessage" class="access-message success">{{ successMessage }}</p>
@@ -319,9 +329,9 @@ onBeforeUnmount(() => clearTimeout(searchTimer));
           <label>Email address<input v-model="form.email" type="email" required :disabled="Boolean(editingId)" /></label>
           <label>Phone number<input v-model="form.phone" type="tel" /></label>
           <label v-if="!editingId">Temporary password<input v-model="form.password" type="password" minlength="10" required /></label>
-          <label>Organization<select v-model="form.organizationId" required @change="organizationChanged"><option disabled value="">Select organization</option><option v-for="organization in organizations" :key="organization.id" :value="organization.id">{{ organization.name }}</option></select></label>
+          <label>Organization<select v-model="form.organizationId" required :disabled="maintenanceStaffMode" @change="organizationChanged"><option disabled value="">Select organization</option><option v-for="organization in organizations" :key="organization.id" :value="organization.id">{{ organization.name }}</option></select></label>
           <label>Role<select v-model="form.roleId" required @change="roleChanged"><option disabled value="">Select role</option><option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option></select></label>
-          <label v-if="scopeType">{{ selectedRole?.key === 'FACILITY_MANAGER' ? 'Local government area (LGA)' : `${scopeType.toLowerCase()} scope` }}<select v-model="form.scopeUnitId" required @change="scopeChanged"><option disabled value="">Select {{ selectedRole?.key === 'FACILITY_MANAGER' ? 'LGA' : 'scope' }}</option><option v-for="unit in scopeOptions" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
+          <label v-if="scopeType">{{ selectedRole?.key === 'FACILITY_MANAGER' ? 'Local government area (LGA)' : selectedRole?.key === 'WORKSHOP_MANAGER' || selectedRole?.key === 'STOREKEEPER' ? 'State' : `${scopeType.toLowerCase()} scope` }}<select v-model="form.scopeUnitId" required :disabled="maintenanceStaffMode && scopeOptions.length === 1" @change="scopeChanged"><option disabled value="">Select {{ selectedRole?.key === 'FACILITY_MANAGER' ? 'LGA' : 'scope' }}</option><option v-for="unit in scopeOptions" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
           <label v-if="selectedRole?.key === 'FACILITY_MANAGER'">Health facility<select v-model="form.facilityId" required :disabled="!form.scopeUnitId"><option disabled value="">{{ form.scopeUnitId ? 'Select health facility' : 'Select an LGA first' }}</option><option v-for="facility in facilityOptions" :key="facility.id" :value="facility.id">{{ facility.name }}</option></select><small v-if="form.scopeUnitId && !facilityOptions.length" class="field-help">No active health facilities are registered under this LGA.</small></label>
           <label v-if="editingId">Account status<select v-model="form.status"><option value="ACTIVE">Active</option><option value="INACTIVE">Inactive</option><option value="SUSPENDED">Suspended</option></select></label>
           <button class="save-account" type="submit" :disabled="saving">{{ saving ? 'Saving changes…' : editingId ? 'Save access changes' : 'Create login account' }}</button>

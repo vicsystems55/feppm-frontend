@@ -26,6 +26,7 @@ import {
   TriangleAlert,
   Truck,
   UserRound,
+  UserCog,
   Users,
   Warehouse,
   Wrench,
@@ -35,6 +36,8 @@ export const ROLE_PRIORITY = [
   'SUPER_ADMIN',
   'NATIONAL_MAINTENANCE_MANAGER',
   'STATE_MAINTENANCE_MANAGER',
+  'WORKSHOP_MANAGER',
+  'STOREKEEPER',
   'MAINTENANCE_SCHEDULER',
   'TECHNICIAN',
   'VENDOR_ADMIN',
@@ -71,6 +74,7 @@ const group = (label, items) => ({
   items,
 });
 const maintenanceOperations = moduleItem('Maintenance operations', 'maintenance-operations', Wrench);
+const supportIssues = moduleItem('Issues & support', 'issues', LifeBuoy);
 const maintenanceRoleNavigation = [
   group('Overview', [dashboard, maintenanceOperations]),
   group('Facilities', [
@@ -80,8 +84,53 @@ const maintenanceRoleNavigation = [
   group('Operations', [
     moduleItem('Request queue', 'maintenance-operations?tab=requests', LifeBuoy),
     moduleItem('Work orders', 'maintenance-operations?tab=work-orders', ClipboardList),
+    moduleItem('Resource requests', 'resource-requests', PackageSearch),
     moduleItem('Technicians', 'maintenance-operations?tab=technicians', Users),
     moduleItem('Vendor contracts', 'maintenance-operations?tab=contracts', Truck),
+  ]),
+  group('Support', [supportIssues]),
+  group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
+];
+const stateMaintenanceRoleNavigation = [
+  ...maintenanceRoleNavigation.slice(0, 3),
+  group('Resources', [
+    moduleItem('Workshops', 'workshops', Warehouse),
+    moduleItem('Store inventory', 'spare-parts', PackageSearch),
+    moduleItem('Tool register', 'tool-register', Wrench),
+  ]),
+  group('Administration', [moduleItem('Workshop staff', 'users', UserCog)]),
+  maintenanceRoleNavigation[3],
+];
+const workshopManagerNavigation = [
+  group('Overview', [dashboard, maintenanceOperations]),
+  group('Facilities', [
+    moduleItem('Facility hierarchy', 'facilities', Warehouse),
+    moduleItem('Equipment registry', 'equipment-registry', Boxes),
+  ]),
+  group('Operations', [
+    moduleItem('Request queue', 'maintenance-operations?tab=requests', LifeBuoy),
+    moduleItem('Work orders', 'maintenance-operations?tab=work-orders', ClipboardList),
+    moduleItem('Resource requests', 'resource-requests', PackageSearch),
+    moduleItem('Technicians', 'maintenance-operations?tab=technicians', Users),
+  ]),
+  group('Support', [supportIssues]),
+  group('Resources', [
+    moduleItem('Workshops', 'workshops', Warehouse),
+    moduleItem('Store inventory', 'spare-parts', PackageSearch),
+    moduleItem('Tool register', 'tool-register', Wrench),
+  ]),
+  group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
+];
+const storekeeperNavigation = [
+  group('Overview', [dashboard]),
+  group('Operations', [
+    moduleItem('Work orders', 'maintenance-operations?tab=work-orders', ClipboardList),
+    moduleItem('Resource requests', 'resource-requests', PackageSearch),
+  ]),
+  group('Resources', [
+    moduleItem('Workshops', 'workshops', Warehouse),
+    moduleItem('Store inventory', 'spare-parts', PackageSearch),
+    moduleItem('Tool register', 'tool-register', Wrench),
   ]),
   group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
 ];
@@ -97,6 +146,7 @@ export const roleNavigation = {
     ]),
     group('Maintenance', [
       maintenanceOperations,
+      moduleItem('Workshops', 'workshops', Warehouse),
       moduleItem('Checklist templates', 'checklist-templates', ClipboardCheck),
       moduleItem('Maintenance plans', 'maintenance-plans', ClipboardList),
       moduleItem('Daily tasks', 'daily-tasks', ListChecks),
@@ -105,7 +155,9 @@ export const roleNavigation = {
       moduleItem('Maintenance calendar', 'maintenance-calendar', CalendarDays),
     ]),
     group('Inventory', [
-      moduleItem('Spare parts', 'spare-parts', PackageSearch),
+      moduleItem('Store inventory', 'spare-parts', PackageSearch),
+      moduleItem('Tool register', 'tool-register', Wrench),
+      moduleItem('Resource requests', 'resource-requests', ClipboardList),
       moduleItem('Vendors', 'vendors', Truck),
       moduleItem('Procurement', 'procurement', ShoppingCart),
     ]),
@@ -243,7 +295,9 @@ export const roleNavigation = {
     ]),
   ],
   NATIONAL_MAINTENANCE_MANAGER: maintenanceRoleNavigation,
-  STATE_MAINTENANCE_MANAGER: maintenanceRoleNavigation,
+  STATE_MAINTENANCE_MANAGER: stateMaintenanceRoleNavigation,
+  WORKSHOP_MANAGER: workshopManagerNavigation,
+  STOREKEEPER: storekeeperNavigation,
   MAINTENANCE_SCHEDULER: maintenanceRoleNavigation,
   TECHNICIAN: maintenanceRoleNavigation,
   VENDOR_ADMIN: maintenanceRoleNavigation,
