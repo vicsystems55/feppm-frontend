@@ -210,6 +210,22 @@ async function submitReport() {
   }
 }
 
+async function resumeWork() {
+  const order = latestOrder.value;
+  if (!order) return;
+  saving.value = true;
+  clearMessages();
+  try {
+    await maintenanceOperationsApi.changeWorkOrderState(auth, order.id, 'resume', 'Required tools or parts received; field work resumed.');
+    success.value = 'Work resumed.';
+    await loadOrders();
+  } catch (actionError) {
+    error.value = actionError.message;
+  } finally {
+    saving.value = false;
+  }
+}
+
 onMounted(() => {
   loadOrders();
   ticker = window.setInterval(() => { now.value = new Date(); }, 1000);
@@ -254,7 +270,8 @@ onBeforeUnmount(() => window.clearInterval(ticker));
           <div class="action-row">
             <button v-if="latestOrder.status === 'ASSIGNED'" class="primary" :disabled="saving" @click="runAction((id) => maintenanceOperationsApi.acceptWorkOrder(auth, id), 'Work order accepted.')"><CheckCircle2 :size="17" /> Accept assignment</button>
             <button v-if="latestOrder.status === 'ACCEPTED'" class="primary green-button" :disabled="saving" @click="runAction((id) => maintenanceOperationsApi.startWorkOrder(auth, id), 'Work started. Your start time has been recorded.')"><Play :size="17" /> Started work</button>
-            <RouterLink v-if="['ASSIGNED','ACCEPTED','IN_PROGRESS','AWAITING_PARTS'].includes(latestOrder.status)" :to="{ path: '/modules/resource-requests', query: { create: '1', workOrderId: latestOrder.id } }"><PackagePlus :size="17" /> Request tools or parts</RouterLink>
+            <RouterLink v-if="latestOrder.status === 'IN_PROGRESS'" :to="{ path: '/modules/resource-requests', query: { create: '1', workOrderId: latestOrder.id } }"><PackagePlus :size="17" /> Request tools or parts</RouterLink>
+            <button v-if="latestOrder.status === 'AWAITING_PARTS'" type="button" :disabled="saving" @click="resumeWork"><Play :size="17" /> Resume work</button>
             <button v-if="latestOrder.status === 'IN_PROGRESS'" class="report-button" type="button" @click="openReport"><ClipboardCheck :size="17" /> Complete field report</button>
             <RouterLink :to="{ path: '/modules/maintenance-operations', query: { tab: 'work-orders' } }">View all work orders</RouterLink>
           </div>
@@ -281,7 +298,7 @@ onBeforeUnmount(() => window.clearInterval(ticker));
           </button>
         </div>
         <div class="day-agenda">
-          <article v-for="order in selectedDayOrders" :key="order.id"><Clock3 :size="18" /><div><strong>{{ formatDate(order.plannedStartAt, { timeStyle: 'short' }) }} · {{ order.workOrderNumber }}</strong><p>{{ order.facility?.name }}  {{ order.title }}</p></div><b>{{ humanStatus(order.status) }}</b></article>
+          <article v-for="order in selectedDayOrders" :key="order.id"><Clock3 :size="18" /><div><strong>{{ formatDate(order.plannedStartAt, { timeStyle: 'short' }) }} - {{ order.workOrderNumber }}</strong><p>{{ order.facility?.name }} - {{ order.title }}</p></div><b>{{ humanStatus(order.status) }}</b></article>
           <div v-if="!selectedDayOrders.length" class="no-agenda"><CalendarDays :size="24" /><span>No scheduled visit for this date.</span></div>
         </div>
       </section>
@@ -289,7 +306,7 @@ onBeforeUnmount(() => window.clearInterval(ticker));
 
     <div v-if="reportOpen" class="report-modal" @click.self="reportOpen = false">
       <form @submit.prevent="submitReport">
-        <header><div><span>Field completion</span><h2>Submit maintenance report</h2><p>{{ latestOrder?.workOrderNumber }} · {{ latestOrder?.facility?.name }}</p></div><button type="button" @click="reportOpen = false"><X :size="21" /></button></header>
+        <header><div><span>Field completion</span><h2>Submit maintenance report</h2><p>{{ latestOrder?.workOrderNumber }} - {{ latestOrder?.facility?.name }}</p></div><button type="button" @click="reportOpen = false"><X :size="21" /></button></header>
         <div class="report-grid">
           <label>Arrival time<input v-model="reportForm.arrivedAt" type="datetime-local" required /></label>
           <label>Departure time<input v-model="reportForm.departedAt" type="datetime-local" /></label>

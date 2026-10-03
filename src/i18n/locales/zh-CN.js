@@ -148,6 +148,6 @@ export default {
     calendarLabel: '检查清单日历', previousMonth: '上个月', nextMonth: '下个月', daily: '每日', weekly: '每周', monthly: '每月',
     dailyTitle: '每日检查清单', weeklyTitle: '每周检查清单', monthlyTitle: '每月检查清单', managerEyebrow: '医疗机构管理员 · 预防性维护', assignedFacility: '您负责的医疗机构', completedInPeriod: '本周期已完成',
     selectedPeriod: '选定周期', assignedChecks: '分配给您的设备检查', taskCount: '{count} 项任务', checkCount: '{count} 项检查', continue: '继续', start: '开始', noTaskForDate: '该日期没有分配任务', noTaskHint: '发布模板并匹配已登记设备后，任务才会显示。',
-    completed: '已完成', inProgress: '进行中', pending: '待处理', day: '日', week: '周', month: '月',
+    completed: '已完成', inProgress: '进行中', pending: '待处理', missed: '已错过 / 已跳过', day: '日', week: '周', month: '月',
   },
 }

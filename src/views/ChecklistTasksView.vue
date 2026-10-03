@@ -22,6 +22,7 @@ const message = ref('');
 const tasks = ref([]);
 const selected = ref(null);
 const selectedDate = ref('');
+const viewMonth = ref(dateKey(new Date()).slice(0, 7));
 const answers = ref({});
 const frequency = computed(() => ({ 'daily-checklist': 'DAILY', 'weekly-checklist': 'WEEKLY', 'monthly-checklist': 'MONTHLY', 'todays-tasks': 'DAILY' }[route.params.slug] || 'DAILY'));
 const title = computed(() => t(`checklistCalendar.${frequency.value.toLowerCase()}Title`));
@@ -56,7 +57,7 @@ function taskDate(task) {
 }
 
 async function api(path, options = {}) { const response = await auth.authorizedFetch(path, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.message || 'Unable to complete this request.'); return payload; }
-async function load() { loading.value = true; error.value = ''; selected.value = null; try { const payload = await api(`/checklists/my-tasks?frequency=${frequency.value}`); tasks.value = payload.data.tasks; } catch (loadError) { error.value = loadError.message; } finally { loading.value = false; } }
+async function load() { loading.value = true; error.value = ''; selected.value = null; try { const payload = await api(`/checklists/my-tasks?frequency=${frequency.value}&month=${viewMonth.value}`); tasks.value = payload.data.tasks; } catch (loadError) { error.value = loadError.message; } finally { loading.value = false; } }
 function answerFor(item) { if (!answers.value[item.id]) answers.value[item.id] = { checklistItemId: item.id, boolean: null, number: null, text: '', photos: [] }; return answers.value[item.id]; }
 function openTask(task) { selected.value = task; answers.value = {}; for (const item of task.maintenanceSchedule.checklistTemplate.items) answerFor(item); }
 async function startTask(task) { try { await api(`/checklists/tasks/${task.id}/start`, { method: 'POST' }); task.status = 'IN_PROGRESS'; openTask(task); } catch (startError) { error.value = startError.message; } }
@@ -85,6 +86,12 @@ async function uploadPhoto(event, item) {
 async function submit() { submitting.value = true; error.value = ''; message.value = ''; try { const payload = await api(`/checklists/tasks/${selected.value.id}/submit`, { method: 'POST', body: JSON.stringify({ responses: Object.values(answers.value), submittedOffline: false }) }); message.value = payload.message; selected.value = null; await load(); } catch (submitError) { error.value = submitError.message; } finally { submitting.value = false; } }
 watch(frequency, () => {
   selectedDate.value = '';
+  const currentMonth = dateKey(new Date()).slice(0, 7);
+  if (viewMonth.value === currentMonth) load();
+  else viewMonth.value = currentMonth;
+});
+watch(viewMonth, () => {
+  selectedDate.value = '';
   load();
 });
 onMounted(load);
@@ -95,7 +102,7 @@ onMounted(load);
     <main class="checklist-page manager-checklist"><header class="checklist-page__hero manager"><div><span>{{ t('checklistCalendar.managerEyebrow') }}</span><h1>{{ title }}</h1><p>{{ auth.user?.facility?.name || t('checklistCalendar.assignedFacility') }}</p></div><div class="checklist-progress"><strong>{{ completed }}/{{ visibleTasks.length }}</strong><span>{{ t('checklistCalendar.completedInPeriod') }}</span></div></header>
       <p v-if="message" class="checklist-notice success"><CheckCircle2 :size="18" />{{ message }}</p><p v-if="error" class="checklist-notice error"><X :size="18" />{{ error }}</p>
       <div v-if="loading" class="checklist-loading"><LoaderCircle class="spin" :size="28" />Preparing your tasks…</div>
-      <section v-else-if="!selected" class="manager-task-list"><ChecklistCalendar :selected-date="selectedDate" :frequency="frequency" :tasks="tasks" @update:selected-date="selectedDate = $event" /><div class="task-list-heading"><div><span>{{ t('checklistCalendar.selectedPeriod') }}</span><h2>{{ t('checklistCalendar.assignedChecks') }}</h2></div><b>{{ t('checklistCalendar.taskCount', { count: visibleTasks.length }) }}</b></div>
+      <section v-else-if="!selected" class="manager-task-list"><ChecklistCalendar v-model:view-month="viewMonth" :selected-date="selectedDate" :frequency="frequency" :tasks="tasks" @update:selected-date="selectedDate = $event" /><div class="task-list-heading"><div><span>{{ t('checklistCalendar.selectedPeriod') }}</span><h2>{{ t('checklistCalendar.assignedChecks') }}</h2></div><b>{{ t('checklistCalendar.taskCount', { count: visibleTasks.length }) }}</b></div>
         <article v-for="task in visibleTasks" :key="task.id"><span class="equipment-icon"><ClipboardCheck :size="23" /></span><div><strong>{{ task.equipment.equipmentType.name }}</strong><span>{{ task.equipment.assetCode }} · {{ t('checklistCalendar.checkCount', { count: task.maintenanceSchedule.checklistTemplate.items.length }) }}</span></div><span class="task-status" :class="`task-status--${task.status.toLowerCase()}`">{{ task.status.replaceAll('_',' ') }}</span><button v-if="!task.status.startsWith('COMPLETED')" type="button" @click="startTask(task)"><Play :size="16" />{{ task.status === 'IN_PROGRESS' ? t('checklistCalendar.continue') : t('checklistCalendar.start') }}<ChevronRight :size="16" /></button><CheckCircle2 v-else class="completed-icon" :size="23" /></article>
         <div v-if="!visibleTasks.length" class="checklist-empty"><ClipboardCheck :size="36" /><strong>{{ t('checklistCalendar.noTaskForDate') }}</strong><span>{{ t('checklistCalendar.noTaskHint') }}</span></div>
       </section>

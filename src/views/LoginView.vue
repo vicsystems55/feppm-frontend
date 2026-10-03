@@ -25,26 +25,6 @@ const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
 const submitting = ref(false);
-const selectedDemoRole = ref('');
-
-const demoPassword = import.meta.env.VITE_DEMO_USER_PASSWORD ?? 'Demo@FEPPM2026';
-const demoAccounts = [
-  { role: 'SUPER_ADMIN', label: 'Super Admin', shortLabel: 'SA', email: 'superadmin@feppm.demo' },
-  { role: 'NATIONAL_ADMIN', label: 'National Admin', shortLabel: 'NA', email: 'national.admin@feppm.demo' },
-  { role: 'ZONAL_ADMIN', label: 'Zonal Admin', shortLabel: 'ZA', email: 'zonal.admin@feppm.demo' },
-  { role: 'STATE_ADMIN', label: 'State Admin', shortLabel: 'STA', email: 'state.admin@feppm.demo' },
-  { role: 'STATE_MAINTENANCE_MANAGER', label: 'State Maintenance Manager', shortLabel: 'SMM', email: 'state.maintenance@feppm.demo' },
-  { role: 'TECHNICIAN', label: 'Technician', shortLabel: 'TECH', email: 'technician@feppm.demo' },
-  { role: 'LGA_ADMIN', label: 'LGA Admin', shortLabel: 'LGA', email: 'lga.admin@feppm.demo' },
-  { role: 'FACILITY_MANAGER', label: 'Facility Manager', shortLabel: 'FM', email: 'facility.manager@feppm.demo' },
-];
-
-function selectDemoAccount(account) {
-  selectedDemoRole.value = account.role;
-  email.value = account.email;
-  password.value = demoPassword;
-  errorMessage.value = '';
-}
 
 async function submitLogin() {
   errorMessage.value = '';
@@ -85,43 +65,13 @@ async function submitLogin() {
             <p>{{ t('login.subtitle') }}</p>
           </div>
 
-          <section class="demo-login" aria-labelledby="demo-login-title">
-            <div class="demo-login-heading">
-              <div>
-                <h3 id="demo-login-title">{{ t('login.quickDemo') }}</h3>
-                <p>{{ t('login.quickDemoHint') }}</p>
-              </div>
-              <span>{{ t('login.demoOnly') }}</span>
-            </div>
-
-            <div class="demo-role-grid">
-              <button
-                v-for="account in demoAccounts"
-                :key="account.role"
-                class="demo-role-card"
-                :class="{ selected: selectedDemoRole === account.role }"
-                type="button"
-                :aria-pressed="selectedDemoRole === account.role"
-                :disabled="submitting"
-                @click="selectDemoAccount(account)"
-              >
-                <span class="demo-role-mark">{{ account.shortLabel }}</span>
-                <span class="demo-role-copy">
-                  <strong>{{ t(`roles.${account.role}`, account.label) }}</strong>
-                  <small>{{ account.email }}</small>
-                </span>
-                <span class="demo-role-check" aria-hidden="true">✓</span>
-              </button>
-            </div>
-          </section>
-
           <form class="login-form" @submit.prevent="submitLogin">
             <p v-if="errorMessage" class="login-error" role="alert" aria-live="polite">{{ errorMessage }}</p>
             <label class="form-field">
               <span>{{ t('login.email') }}</span>
               <span class="input-wrap">
                 <Mail :size="19" />
-                <input v-model.trim="email" type="email" autocomplete="email" :placeholder="t('login.emailPlaceholder')" :disabled="submitting" required @input="selectedDemoRole = ''" />
+                <input v-model.trim="email" type="email" autocomplete="email" :placeholder="t('login.emailPlaceholder')" :disabled="submitting" required />
               </span>
             </label>
 
@@ -129,7 +79,7 @@ async function submitLogin() {
               <span>{{ t('login.password') }}</span>
               <span class="input-wrap">
                 <LockKeyhole :size="19" />
-                <input v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="current-password" :placeholder="t('login.passwordPlaceholder')" :disabled="submitting" required @input="selectedDemoRole = ''" />
+                <input v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="current-password" :placeholder="t('login.passwordPlaceholder')" :disabled="submitting" required />
                 <button type="button" :aria-label="passwordVisible ? t('login.hidePassword') : t('login.showPassword')" @click="passwordVisible = !passwordVisible">
                   <EyeOff v-if="passwordVisible" :size="19" />
                   <Eye v-else :size="19" />
@@ -185,25 +135,6 @@ async function submitLogin() {
 .login-form-wrap { width: min(500px, 100%); margin: auto; padding: 34px 0; }
 .login-heading h2 { margin: 0; color: #101828; font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-height: 1.25; text-transform: capitalize; }
 .login-heading p { margin: 9px 0 0; color: #475467; font-size: 16px; line-height: 1.6; }
-.demo-login { margin-top: 25px; padding: 15px; border: 1px solid #dce7f4; border-radius: 12px; background: #f8fbff; }
-.demo-login-heading { margin-bottom: 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
-.demo-login-heading h3 { margin: 0; color: #163b65; font-size: 14px; font-weight: 700; line-height: 1.4; }
-.demo-login-heading p { margin: 2px 0 0; color: #667085; font-size: 12px; line-height: 1.4; }
-.demo-login-heading > span { padding: 4px 8px; flex: 0 0 auto; border-radius: 999px; color: #075e42; background: #dcfce7; font-size: 10px; font-weight: 700; letter-spacing: .04em; line-height: 1.3; text-transform: uppercase; }
-.demo-role-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.demo-role-card { position: relative; min-width: 0; min-height: 52px; padding: 8px; padding-inline-end: 25px; display: flex; align-items: center; gap: 9px; overflow: hidden; border: 1px solid #d7e1ed; border-radius: 9px; color: #344054; background: #fff; text-align: start; cursor: pointer; transition: border-color .18s, box-shadow .18s, transform .18s, background .18s; }
-.demo-role-card:hover { border-color: #78aee9; background: #fafdff; transform: translateY(-1px); }
-.demo-role-card:focus-visible { outline: 3px solid rgba(22,112,220,.2); outline-offset: 1px; }
-.demo-role-card.selected { border-color: #1670dc; background: #eef6ff; box-shadow: 0 0 0 2px rgba(22,112,220,.1); }
-.demo-role-card:disabled { cursor: wait; opacity: .65; transform: none; }
-.demo-role-mark { width: 30px; height: 30px; display: grid; flex: 0 0 30px; place-items: center; border-radius: 8px; color: #1264c7; background: #e6f1ff; font-size: 10px; font-weight: 800; letter-spacing: -.02em; }
-.demo-role-card.selected .demo-role-mark { color: #fff; background: #126bd3; }
-.demo-role-copy { min-width: 0; display: block; }
-.demo-role-copy strong, .demo-role-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.demo-role-copy strong { color: #1d2939; font-size: 11px; font-weight: 700; line-height: 1.35; }
-.demo-role-copy small { margin-top: 2px; color: #667085; font-size: 9px; line-height: 1.3; }
-.demo-role-check { position: absolute; top: 50%; inset-inline-end: 8px; width: 15px; height: 15px; display: grid; place-items: center; border-radius: 50%; color: transparent; background: #e6edf5; font-size: 10px; font-weight: 800; transform: translateY(-50%); }
-.demo-role-card.selected .demo-role-check { color: #fff; background: #16a163; }
 .login-form { margin-top: 24px; }
 .login-error { margin: 0 0 18px; padding: 11px 13px; border: 1px solid #f4b4ad; border-radius: 8px; color: #b42318; background: #fff1f0; font-size: 13px; line-height: 1.5; }
 .form-field { display: block; margin-bottom: 22px; }.form-field > span:first-child { display: block; margin-bottom: 9px; color: #101828; font-size: 15px; font-weight: 600; line-height: 1.5; text-transform: capitalize; }
@@ -238,7 +169,6 @@ async function submitLogin() {
   .login-panel-header { align-items: center; }.language-button span { display: none; }
   .login-form-wrap { padding: 48px 0 20px; }
   .login-heading { text-align: center; }.login-heading h2 { font-size: 28px; }.login-heading p { font-size: 14px; }
-  .demo-login { padding: 13px; text-align: start; }.demo-role-grid { grid-template-columns: 1fr; }
   .login-form { margin-top: 30px; }.form-field { margin-bottom: 20px; }.form-options { align-items: flex-start; }
   .provider-grid button { font-size: 0; gap: 0; }.provider-grid button > span { font-size: 21px; }
   .contact-admin { display: flex; flex-direction: column; gap: 5px; }.contact-admin a { margin: 0; }
@@ -246,6 +176,6 @@ async function submitLogin() {
 }
 
 @media (max-height: 780px) and (min-width: 901px) {
-  .login-card { min-height: 780px; }.login-form-wrap { padding: 20px 0; }.demo-login { margin-top: 18px; }.login-form { margin-top: 18px; }.form-field { margin-bottom: 14px; }.auth-divider { margin: 18px 0; }.contact-admin { margin-top: 20px; }
+  .login-card { min-height: 780px; }.login-form-wrap { padding: 20px 0; }.login-form { margin-top: 18px; }.form-field { margin-bottom: 14px; }.auth-divider { margin: 18px 0; }.contact-admin { margin-top: 20px; }
 }
 </style>

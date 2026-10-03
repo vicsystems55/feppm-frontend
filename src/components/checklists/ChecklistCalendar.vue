@@ -77,9 +77,13 @@ function chooseDate(date) {
 
 function statusForDate(date) {
   const matching = props.tasks.filter((task) => taskDate(task) === dateKey(date));
-  if (matching.some((task) => task.status.startsWith('COMPLETED'))) return 'completed';
-  if (matching.some((task) => task.status === 'IN_PROGRESS')) return 'in-progress';
-  if (matching.length) return 'pending';
+  const actionable = matching.filter((task) => !['WAIVED', 'NOT_APPLICABLE', 'CANCELLED'].includes(task.status));
+  if (!actionable.length) return '';
+  if (actionable.every((task) => task.status.startsWith('COMPLETED'))) return 'completed';
+  const todayKey = dateKey(new Date());
+  if (actionable.some((task) => ['MISSED', 'OVERDUE'].includes(task.status)) || (props.frequency === 'DAILY' && dateKey(date) < todayKey)) return 'missed';
+  if (actionable.some((task) => task.status === 'IN_PROGRESS')) return 'in-progress';
+  if (actionable.length) return 'pending';
   return '';
 }
 
@@ -126,12 +130,15 @@ onMounted(() => {
         :key="dateKey(date)"
         type="button"
         class="checklist-calendar__day"
-        :class="{
-          'is-other-month': date.getMonth() !== parseDateKey(`${viewMonth || dateKey(viewDate)}-01`).getMonth(),
-          'is-disabled': !isSelectable(date),
-          'is-selected': selectedDate === dateKey(date),
-          'is-today': dateKey(date) === dateKey(new Date()),
-        }"
+        :class="[
+          {
+            'is-other-month': date.getMonth() !== parseDateKey(`${viewMonth || dateKey(viewDate)}-01`).getMonth(),
+            'is-disabled': !isSelectable(date),
+            'is-selected': selectedDate === dateKey(date),
+            'is-today': dateKey(date) === dateKey(new Date()),
+          },
+          statusForDate(date) ? `day-status-${statusForDate(date)}` : '',
+        ]"
         :disabled="!isSelectable(date)"
         @click="chooseDate(date)"
       >
@@ -143,6 +150,7 @@ onMounted(() => {
       <span><i class="status-completed" />{{ t('checklistCalendar.completed') }}</span>
       <span><i class="status-in-progress" />{{ t('checklistCalendar.inProgress') }}</span>
       <span><i class="status-pending" />{{ t('checklistCalendar.pending') }}</span>
+      <span><i class="status-missed" />{{ t('checklistCalendar.missed') }}</span>
     </footer>
   </section>
 </template>
@@ -163,9 +171,15 @@ onMounted(() => {
 .checklist-calendar__day.is-selected.is-today span { background: var(--green); }
 .checklist-calendar__day.is-other-month { opacity: .35; }
 .checklist-calendar__day.is-disabled { color: #98a2b3; background: #f2f4f7; cursor: not-allowed; }
+.checklist-calendar__day.day-status-completed { color: #067647; border-color: #a6e4c5; background: #e7f8ef; }
+.checklist-calendar__day.day-status-missed { color: #b42318; border-color: #f7b9b5; background: #feeceb; }
+.checklist-calendar__day.day-status-in-progress { color: #b54708; border-color: #f6cf9f; background: #fff3df; }
+.checklist-calendar__day.day-status-pending { color: #175cd3; border-color: #b8d2f4; background: #eaf2ff; }
+.checklist-calendar__day.day-status-completed.is-today span { background: #079455; }
+.checklist-calendar__day.day-status-missed.is-today span { background: #d92d20; }
 .checklist-calendar__day i, .checklist-calendar__legend i { width: 6px; height: 6px; display: block; border-radius: 50%; }
 .checklist-calendar__day i { position: absolute; right: 7px; bottom: 7px; }
-.status-completed { background: var(--green); }.status-in-progress { background: var(--orange); }.status-pending { background: var(--blue); }
+.status-completed { background: var(--green); }.status-in-progress { background: var(--orange); }.status-pending { background: var(--blue); }.status-missed { background: #d92d20; }
 .checklist-calendar__legend { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 10px; }
 .checklist-calendar__legend span { display: inline-flex; align-items: center; gap: 5px; }
 @media (max-width: 520px) { .checklist-calendar { padding: 14px; }.checklist-calendar__day { min-height: 39px; font-size: 12px; }.checklist-calendar__legend { gap: 8px; } }
