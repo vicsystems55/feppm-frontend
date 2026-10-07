@@ -80,6 +80,12 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/notifications' },
     },
     {
+      path: '/modules/settings',
+      name: 'system-settings',
+      component: () => import('../views/SystemSettingsView.vue'),
+      meta: { requiresAuth: true, roles: ['SUPER_ADMIN'], menuPath: '/modules/settings' },
+    },
+    {
       path: '/modules/issues',
       name: 'tickets',
       component: () => import('../views/TicketsView.vue'),
@@ -163,6 +169,10 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.permission && !auth.user?.permissions?.includes(to.meta.permission)) {
+    return { name: 'dashboard' };
+  }
+
+  if (to.meta.roles && !auth.user?.roles?.some((role) => to.meta.roles.includes(role.key))) {
     return { name: 'dashboard' };
   }
 
