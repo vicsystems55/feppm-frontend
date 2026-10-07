@@ -80,6 +80,12 @@ const router = createRouter({
       meta: { requiresAuth: true, menuPath: '/modules/notifications' },
     },
     {
+      path: '/modules/executive-reports',
+      name: 'executive-reports',
+      component: () => import('../views/ExecutiveReportsView.vue'),
+      meta: { requiresAuth: true, roles: ['STATE_ADMIN', 'WORKSHOP_MANAGER', 'STATE_MAINTENANCE_MANAGER'], menuPath: '/modules/executive-reports' },
+    },
+    {
       path: '/modules/settings',
       name: 'system-settings',
       component: () => import('../views/SystemSettingsView.vue'),

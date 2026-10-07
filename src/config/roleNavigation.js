@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileDown,
+  FileSpreadsheet,
   FileText,
   Gauge,
   HeartPulse,
@@ -75,6 +76,7 @@ const group = (label, items) => ({
 });
 const maintenanceOperations = moduleItem('Maintenance operations', 'maintenance-operations', Wrench);
 const supportIssues = moduleItem('Issues & support', 'issues', LifeBuoy);
+const executiveReports = moduleItem('Executive reports', 'executive-reports', FileSpreadsheet);
 const maintenanceRoleNavigation = [
   group('Overview', [dashboard, maintenanceOperations]),
   group('Facilities', [
@@ -99,6 +101,7 @@ const stateMaintenanceRoleNavigation = [
     moduleItem('Tool register', 'tool-register', Wrench),
   ]),
   group('Administration', [moduleItem('Workshop staff', 'users', UserCog)]),
+  group('Reports', [executiveReports]),
   maintenanceRoleNavigation[3],
 ];
 const workshopManagerNavigation = [
@@ -119,6 +122,7 @@ const workshopManagerNavigation = [
     moduleItem('Store inventory', 'spare-parts', PackageSearch),
     moduleItem('Tool register', 'tool-register', Wrench),
   ]),
+  group('Reports', [executiveReports]),
   group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
 ];
 const storekeeperNavigation = [
@@ -249,7 +253,7 @@ export const roleNavigation = {
       moduleItem('Alerts', 'alerts', Bell),
     ]),
     group('Inventory', [moduleItem('Spare parts', 'spare-parts', PackageSearch)]),
-    group('Reports', [moduleItem('State reports', 'state-reports', FileText)]),
+    group('Reports', [executiveReports, moduleItem('State reports', 'state-reports', FileText)]),
     group('Account', [moduleItem('Notifications', 'notifications', Bell)]),
   ],
 

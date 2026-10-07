@@ -149,5 +149,6 @@ export default {
     dailyTitle: '每日检查清单', weeklyTitle: '每周检查清单', monthlyTitle: '每月检查清单', managerEyebrow: '医疗机构管理员 · 预防性维护', assignedFacility: '您负责的医疗机构', completedInPeriod: '本周期已完成',
     selectedPeriod: '选定周期', assignedChecks: '分配给您的设备检查', taskCount: '{count} 项任务', checkCount: '{count} 项检查', continue: '继续', start: '开始', noTaskForDate: '该日期没有分配任务', noTaskHint: '发布模板并匹配已登记设备后，任务才会显示。',
     completed: '已完成', inProgress: '进行中', pending: '待处理', missed: '已错过 / 已跳过', day: '日', week: '周', month: '月',
+    periodSummary: '所显示月份的任务统计', taskSummary: '任务摘要', totalTasks: '任务总数', scheduledInPeriod: '本月计划任务', totalCompleted: '完成总数', notConducted: '未执行', missedOrOverdue: '已错过或逾期', outstanding: '未完成', pendingOrInProgress: '待处理或进行中',
   },
 }

@@ -150,5 +150,6 @@ export default {
     dailyTitle: 'Daily checklist', weeklyTitle: 'Weekly checklist', monthlyTitle: 'Monthly checklist', managerEyebrow: 'Facility Manager · Preventive maintenance', assignedFacility: 'Your assigned facility', completedInPeriod: 'completed in this period',
     selectedPeriod: 'Selected period', assignedChecks: 'Your assigned equipment checks', taskCount: '{count} tasks', checkCount: '{count} checks', continue: 'Continue', start: 'Start', noTaskForDate: 'No task is assigned for this date', noTaskHint: 'A published template and matching registered equipment are required before tasks appear.',
     completed: 'Completed', inProgress: 'In progress', pending: 'Pending', missed: 'Missed / skipped', day: 'day', week: 'week', month: 'month',
+    periodSummary: 'Task statistics for the displayed month', taskSummary: 'task summary', totalTasks: 'Total tasks', scheduledInPeriod: 'Scheduled in this month', totalCompleted: 'Total completed', notConducted: 'Not conducted', missedOrOverdue: 'Missed or overdue', outstanding: 'Outstanding', pendingOrInProgress: 'Pending or in progress',
   },
 };

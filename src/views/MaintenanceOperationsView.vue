@@ -1,5 +1,5 @@
 <script setup>
-import { AlertTriangle, BriefcaseBusiness, Building2, ClipboardList, HardHat, LoaderCircle, Plus, Search, ShieldAlert, Truck, Users, Wrench, X } from '@lucide/vue';
+import { AlertTriangle, BriefcaseBusiness, Building2, CalendarRange, ClipboardList, Download, HardHat, LoaderCircle, Plus, Search, ShieldAlert, Truck, Users, WalletCards, Wrench, X } from '@lucide/vue';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AppHeader from '../components/layout/AppHeader.vue';
@@ -20,6 +20,11 @@ const requests = ref([]);
 const workOrders = ref([]);
 const technicians = ref([]);
 const contracts = ref([]);
+const requisitions = ref([]);
+const requisitionMonth = ref(new Date().toISOString().slice(0, 7));
+const selectedRequisitionOrderIds = ref([]);
+const requisitionCosts = reactive({});
+const requisitionNotes = ref('');
 const options = ref({ users: [], units: [], facilities: [], vendors: [], equipmentTypes: [], skills: [] });
 const selectedRequest = ref(null);
 const selectedWorkOrder = ref(null);
@@ -35,13 +40,18 @@ const assignmentForm = reactive({ assignedTechnicianId: '', vendorContractId: ''
 const verificationForm = reactive({ approved: true, note: '' });
 let searchTimer;
 
-const tabs = [
+const maintenanceRoleKeys = computed(() => new Set((auth.user?.roles ?? []).map(({ key }) => key)));
+const canUseRequisitions = computed(() => ['SUPER_ADMIN', 'WORKSHOP_MANAGER', 'STATE_MAINTENANCE_MANAGER'].some((key) => maintenanceRoleKeys.value.has(key)));
+const canSubmitRequisitions = computed(() => maintenanceRoleKeys.value.has('SUPER_ADMIN') || maintenanceRoleKeys.value.has('WORKSHOP_MANAGER'));
+const canReviewRequisitions = computed(() => maintenanceRoleKeys.value.has('SUPER_ADMIN') || maintenanceRoleKeys.value.has('STATE_MAINTENANCE_MANAGER'));
+const tabs = computed(() => [
   { key: 'requests', label: 'Request queue', icon: ClipboardList },
   { key: 'work-orders', label: 'Work orders', icon: Wrench },
+  ...(canUseRequisitions.value ? [{ key: 'requisitions', label: 'Monthly requisitions', icon: WalletCards }] : []),
   { key: 'technicians', label: 'Technicians', icon: Users },
   { key: 'contracts', label: 'Vendor contracts', icon: Truck },
-];
-const activeTab = computed(() => tabs.some(({ key }) => key === route.query.tab) ? route.query.tab : 'requests');
+]);
+const activeTab = computed(() => tabs.value.some(({ key }) => key === route.query.tab) ? route.query.tab : 'requests');
 const permissionSet = computed(() => new Set(auth.user?.permissions ?? []));
 const canTriage = computed(() => permissionSet.value.has('maintenance_requests.triage'));
 const canCreateWorkOrder = computed(() => permissionSet.value.has('work_orders.create'));
@@ -68,10 +78,14 @@ const statCards = computed(() => [
   { label: 'Critical', value: dashboard.value.summary?.criticalRequests ?? 0, icon: ShieldAlert, tone: 'red' },
   { label: 'Open work orders', value: dashboard.value.summary?.activeWorkOrders ?? 0, icon: HardHat, tone: 'green' },
 ]);
+const requisitionEligibleOrders = computed(() => workOrders.value.filter((order) => !['COMPLETED', 'CANCELLED'].includes(order.status)));
+const selectedRequisitionTotal = computed(() => selectedRequisitionOrderIds.value.reduce((sum, id) => sum + Number(requisitionCosts[id] || 0), 0));
 
 function label(value) { return String(value ?? '').toLowerCase().replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase()); }
 function date(value) { return value ? new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : 'Not set'; }
 function fullName(person) { return person ? `${person.firstName} ${person.lastName}`.trim() : 'Unassigned'; }
+function currency(value) { return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(Number(value || 0)); }
+function demoCost(order, index) { return Number(order.estimatedCost) || ({ 1: 450000, 2: 275000, 3: 160000, 4: 90000, 5: 50000 }[order.priority] ?? 125000) + (index * 12500); }
 function nextWorkOrderStep(status) {
   return {
     DRAFT: 'Submit the draft for management approval.',
@@ -105,10 +119,56 @@ async function loadData(preserveMessages = false) {
     dashboard.value = dashboardData;
     requests.value = requestData.requests;
     workOrders.value = workOrderData.workOrders;
+    workOrders.value.forEach((order, index) => { if (!requisitionCosts[order.id]) requisitionCosts[order.id] = demoCost(order, index); });
     technicians.value = technicianData.technicians;
     contracts.value = contractData.contracts;
     if (optionData) options.value = optionData;
+    if (canUseRequisitions.value) await loadRequisitions();
   } catch (loadError) { error.value = loadError.message; } finally { loading.value = false; }
+}
+
+async function loadRequisitions() {
+  try { requisitions.value = (await maintenanceOperationsApi.monthlyRequisitions(auth, { month: requisitionMonth.value })).requisitions; }
+  catch (loadError) { error.value = loadError.message; }
+}
+
+async function submitMonthlyRequisition() {
+  if (!selectedRequisitionOrderIds.value.length) { error.value = 'Select at least one work order for this month.'; return; }
+  saving.value = true; clearMessages();
+  try {
+    const payload = await maintenanceOperationsApi.submitMonthlyRequisition(auth, {
+      month: requisitionMonth.value,
+      notes: requisitionNotes.value,
+      items: selectedRequisitionOrderIds.value.map((workOrderId) => ({ workOrderId, estimatedCost: requisitionCosts[workOrderId] })),
+    });
+    success.value = payload.requisition ? `${payload.requisition.requisitionNumber} submitted to the State Maintenance Manager.` : 'Monthly requisition submitted.';
+    selectedRequisitionOrderIds.value = [];
+    requisitionNotes.value = '';
+    await loadRequisitions();
+  } catch (saveError) { error.value = saveError.message; } finally { saving.value = false; }
+}
+
+async function reviewRequisition(requisition, action) {
+  saving.value = true; clearMessages();
+  try {
+    await maintenanceOperationsApi.reviewMonthlyRequisition(auth, requisition.id, { action });
+    success.value = action === 'FUND' ? `${requisition.requisitionNumber} marked as funded.` : `${requisition.requisitionNumber} carried into the next month.`;
+    await loadRequisitions();
+  } catch (saveError) { error.value = saveError.message; } finally { saving.value = false; }
+}
+
+function exportMonthlyRequisitions() {
+  const rows = [['Requisition', 'Month', 'Status', 'Work order', 'Facility', 'Equipment', 'Approximate cost (NGN)', 'Funding status']];
+  requisitions.value.forEach((requisition) => requisition.items.forEach((item) => rows.push([
+    requisition.requisitionNumber, requisitionMonth.value, label(requisition.status), item.workOrder.workOrderNumber,
+    item.workOrder.facility?.name ?? '', item.workOrder.equipment?.assetCode ?? '', Number(item.estimatedCost), label(item.fundingStatus),
+  ])));
+  const csv = rows.map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\r\n');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  link.download = `FEPPM-work-order-requisitions-${requisitionMonth.value}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 async function loadRequests() {
@@ -213,6 +273,7 @@ async function saveVendor() {
 
 watch(() => filters.triage, loadRequests);
 watch(() => filters.search, () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadRequests, 350); });
+watch(requisitionMonth, () => { if (canUseRequisitions.value) loadRequisitions(); });
 onMounted(loadData);
 </script>
 
@@ -255,6 +316,21 @@ onMounted(loadData);
         <section v-else-if="activeTab === 'work-orders'" class="maintenance-panel">
           <header><div><h2>Work orders</h2><p>Technical work authorized from assessed maintenance requests.</p></div></header>
           <div class="maintenance-card-grid"><article v-for="order in workOrders" :key="order.id" class="work-card"><div><b :class="`priority p${order.priority}`">P{{ order.priority }}</b><span>{{ label(order.status) }}</span></div><h3>{{ order.workOrderNumber }}</h3><p>{{ order.title }}</p><dl><div><dt>Facility</dt><dd>{{ order.facility?.name ?? 'Not specified' }}</dd></div><div><dt>Assigned to</dt><dd>{{ order.assignedTechnician ? fullName(order.assignedTechnician.user) : order.vendorContract?.vendor?.name ?? 'Not assigned' }}</dd></div><div><dt>Planned start</dt><dd>{{ date(order.plannedStartAt) }}</dd></div></dl><button class="work-card__open" type="button" @click="openWorkOrder(order)">Open work order</button></article><div v-if="!workOrders.length" class="empty-card">No work orders have been created yet.</div></div>
+        </section>
+
+        <section v-else-if="activeTab === 'requisitions'" class="maintenance-panel requisition-panel">
+          <header><div><h2>Monthly work-order requisitions</h2><p>Collate approximate repair costs for funding review without interrupting the work-order lifecycle.</p></div><div class="requisition-actions"><label><CalendarRange :size="17" /><input v-model="requisitionMonth" type="month" /></label><button class="primary" type="button" :disabled="!requisitions.length" @click="exportMonthlyRequisitions"><Download :size="17" /> Export monthly requisitions</button></div></header>
+
+          <form v-if="canSubmitRequisitions" class="requisition-builder" @submit.prevent="submitMonthlyRequisition">
+            <div class="requisition-builder__heading"><div><span>WORKSHOP FUNDING REQUEST</span><h3>Collate work orders for {{ requisitionMonth }}</h3><p>Select outstanding work and adjust the demonstration estimates before submission.</p></div><strong>{{ currency(selectedRequisitionTotal) }}</strong></div>
+            <div class="maintenance-table-wrap"><table><thead><tr><th>Select</th><th>Work order</th><th>Facility</th><th>Status</th><th>Approximate cost</th></tr></thead><tbody>
+              <tr v-for="order in requisitionEligibleOrders" :key="order.id"><td><input v-model="selectedRequisitionOrderIds" :value="order.id" type="checkbox" /></td><td><strong>{{ order.workOrderNumber }}</strong><span>{{ order.title }}</span></td><td>{{ order.facility?.name ?? 'Not specified' }}</td><td>{{ label(order.status) }}</td><td><div class="money-input"><span>₦</span><input v-model.number="requisitionCosts[order.id]" min="1" step="1000" type="number" /></div></td></tr>
+              <tr v-if="!requisitionEligibleOrders.length"><td colspan="5" class="empty">No open work orders are available for collation.</td></tr>
+            </tbody></table></div>
+            <div class="requisition-submit"><label>Workshop note<textarea v-model="requisitionNotes" rows="2" placeholder="Funding justification or priority note" /></label><button class="primary" :disabled="saving || !selectedRequisitionOrderIds.length" type="submit"><WalletCards :size="17" />{{ saving ? 'Submitting…' : 'Submit monthly requisition' }}</button></div>
+          </form>
+
+          <div class="requisition-list"><article v-for="requisition in requisitions" :key="requisition.id" class="requisition-card"><header><div><span>{{ requisition.requisitionNumber }}</span><h3>{{ currency(requisition.totalEstimatedCost) }}</h3></div><b :class="`req-${requisition.status.toLowerCase()}`">{{ label(requisition.status) }}</b></header><p>{{ requisition.items.length }} work order(s) · Submitted by {{ fullName(requisition.submittedBy) }}</p><ul><li v-for="item in requisition.items" :key="item.id"><span><strong>{{ item.workOrder.workOrderNumber }}</strong>{{ item.workOrder.facility?.name ?? 'No facility' }}</span><b>{{ currency(item.estimatedCost) }}</b></li></ul><footer v-if="canReviewRequisitions && requisition.status === 'SUBMITTED'"><button type="button" :disabled="saving" @click="reviewRequisition(requisition, 'DEFER')">Carry to next month</button><button class="primary" type="button" :disabled="saving" @click="reviewRequisition(requisition, 'FUND')">Mark funds available</button></footer><small v-if="requisition.carriedFromId">Spill-over from the previous month</small></article><div v-if="!requisitions.length" class="empty-card">No requisitions have been submitted for this month.</div></div>
         </section>
 
         <section v-else-if="activeTab === 'technicians'" class="maintenance-panel">
@@ -305,4 +381,6 @@ onMounted(loadData);
 .inline-hint{padding:10px 12px;border-radius:9px;background:#fff6e6;color:#8a4b08}.inline-hint button{border:0;background:transparent;color:#0967d2;font:inherit;font-weight:750;cursor:pointer}
 .work-card__open{width:100%;margin-top:15px;border:1px solid #bfd5ef;border-radius:9px;padding:9px;background:#f5f9ff;color:#0967d2;font:inherit;font-weight:750;cursor:pointer}.request-actions{display:flex;align-items:center;gap:10px;min-width:180px}.details-link{color:#0967d2;font-size:12px;font-weight:750;text-decoration:none;white-space:nowrap}.details-link:hover{text-decoration:underline}.work-order-status{display:flex;justify-content:space-between;gap:12px;margin:18px 0;padding:12px 14px;border-radius:10px;background:#eef6ff}.work-order-status b{color:#0967d2}.work-order-status span{color:#52627a}.execution-summary{padding:15px;border:1px solid #dfe7ef;border-radius:12px}.execution-summary h3,.activity-timeline h3{margin:0 0 12px}.execution-summary dl{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0}.execution-summary dl div{padding:9px;border-radius:8px;background:#f7f9fc}.execution-summary dt{font-size:12px;color:#748196}.execution-summary dd{margin:3px 0 0;font-weight:700}.activity-timeline{margin-top:20px;padding-top:18px;border-top:1px solid #e3e8ef}.activity-timeline article{padding:11px 0 11px 15px;border-left:2px solid #cfe0f3}.activity-timeline article b,.activity-timeline article span{display:block}.activity-timeline article span{margin-top:3px;color:#778499;font-size:12px}.activity-timeline article p{margin:6px 0 0;color:#4f5f73}
 .lifecycle-next{margin:-8px 0 18px!important;padding:11px 13px;border-left:3px solid #0967d2;border-radius:0 8px 8px 0;background:#f6f9fd;color:#52627a!important}.lifecycle-next strong{color:#172b4d}
+.requisition-actions{display:flex;align-items:center;gap:9px}.requisition-actions label{height:42px;padding:0 10px;display:flex;align-items:center;gap:7px;border:1px solid #d7e0ea;border-radius:9px}.requisition-actions input{border:0;outline:0}.requisition-builder{margin:17px;border:1px solid #d9e5f2;border-radius:14px;overflow:hidden}.requisition-builder__heading{padding:17px 19px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:linear-gradient(120deg,#f2f7ff,#f0fff8)}.requisition-builder__heading span{color:#0967d2;font-size:10px;font-weight:800;letter-spacing:.08em}.requisition-builder__heading h3{margin:4px 0}.requisition-builder__heading p{margin:0;color:#68778c}.requisition-builder__heading>strong{color:#087a46;font-size:24px}.money-input{display:flex;align-items:center;border:1px solid #d5dee8;border-radius:8px;overflow:hidden}.money-input span{padding:9px;color:#087a46;background:#ecfdf3}.money-input input{width:130px;padding:9px;border:0;outline:0}.requisition-submit{padding:15px 18px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:15px;border-top:1px solid #e7edf4}.requisition-submit label{display:grid;gap:5px;color:#445268;font-size:12px;font-weight:700}.requisition-submit textarea{padding:9px;border:1px solid #d5dee8;border-radius:8px;resize:vertical}.requisition-list{padding:0 17px 17px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.requisition-card{padding:17px;border:1px solid #dfe7ef;border-radius:14px}.requisition-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.requisition-card header span{color:#0967d2;font-size:11px;font-weight:800}.requisition-card h3{margin:4px 0 0;font-size:22px}.requisition-card header>b{padding:5px 8px;border-radius:999px;font-size:10px}.req-submitted{color:#175cd3;background:#eaf2ff}.req-funded{color:#067647;background:#e7f8ef}.req-deferred{color:#b54708;background:#fff3df}.req-draft{color:#475467;background:#f2f4f7}.requisition-card>p{color:#66758a}.requisition-card ul{margin:13px 0;padding:0;list-style:none;border-top:1px solid #edf1f5}.requisition-card li{padding:10px 0;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #edf1f5}.requisition-card li span,.requisition-card li strong{display:block}.requisition-card li span{color:#66758a;font-size:11px}.requisition-card li strong{margin-bottom:2px;color:#1f2b3d;font-size:12px}.requisition-card footer{padding-top:14px;display:flex;justify-content:flex-end;gap:8px}.requisition-card footer>button:not(.primary){padding:10px 13px;border:1px solid #e1a86b;border-radius:9px;color:#a65300;background:#fff8ec;font:inherit;font-weight:700;cursor:pointer}.requisition-card>small{display:block;margin-top:12px;color:#b54708;font-weight:700}
+@media(max-width:1050px){.requisition-list{grid-template-columns:1fr 1fr}}@media(max-width:720px){.requisition-builder__heading{align-items:flex-start;flex-direction:column}.requisition-list,.requisition-submit{grid-template-columns:1fr}.requisition-actions{width:100%;flex-direction:column}.requisition-actions label,.requisition-actions button{width:100%;box-sizing:border-box}.requisition-builder{margin:10px}.requisition-list{padding:0 10px 10px}.requisition-submit button{width:100%}}
 </style>

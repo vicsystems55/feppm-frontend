@@ -11,7 +11,7 @@ import { useAuthStore } from '../stores/auth.js';
 
 const route = useRoute();
 const auth = useAuthStore();
-const { t } = useI18n();
+const { locale, t } = useI18n();
 const sidebarOpen = ref(false);
 const loading = ref(true);
 const submitting = ref(false);
@@ -31,6 +31,15 @@ const visibleTasks = computed(() => selectedDate.value
   ? tasks.value.filter((task) => taskDate(task) === selectedDate.value)
   : tasks.value);
 const completed = computed(() => visibleTasks.value.filter((task) => task.status.startsWith('COMPLETED')).length);
+const periodTasks = computed(() => tasks.value.filter((task) => !['WAIVED', 'NOT_APPLICABLE', 'CANCELLED'].includes(task.status)));
+const periodCompleted = computed(() => periodTasks.value.filter((task) => task.status.startsWith('COMPLETED')).length);
+const periodNotConducted = computed(() => periodTasks.value.filter((task) => ['MISSED', 'OVERDUE'].includes(task.status)).length);
+const periodOutstanding = computed(() => Math.max(0, periodTasks.value.length - periodCompleted.value - periodNotConducted.value));
+const periodLabel = computed(() => {
+  const [year, month] = viewMonth.value.split('-').map(Number);
+  if (!year || !month) return '';
+  return new Intl.DateTimeFormat(locale.value, { month: 'long', year: 'numeric' }).format(new Date(year, month - 1, 1));
+});
 
 function dateKey(date) {
   const year = date.getFullYear();
@@ -102,10 +111,19 @@ onMounted(load);
     <main class="checklist-page manager-checklist"><header class="checklist-page__hero manager"><div><span>{{ t('checklistCalendar.managerEyebrow') }}</span><h1>{{ title }}</h1><p>{{ auth.user?.facility?.name || t('checklistCalendar.assignedFacility') }}</p></div><div class="checklist-progress"><strong>{{ completed }}/{{ visibleTasks.length }}</strong><span>{{ t('checklistCalendar.completedInPeriod') }}</span></div></header>
       <p v-if="message" class="checklist-notice success"><CheckCircle2 :size="18" />{{ message }}</p><p v-if="error" class="checklist-notice error"><X :size="18" />{{ error }}</p>
       <div v-if="loading" class="checklist-loading"><LoaderCircle class="spin" :size="28" />Preparing your tasks…</div>
-      <section v-else-if="!selected" class="manager-task-list"><ChecklistCalendar v-model:view-month="viewMonth" :selected-date="selectedDate" :frequency="frequency" :tasks="tasks" @update:selected-date="selectedDate = $event" /><div class="task-list-heading"><div><span>{{ t('checklistCalendar.selectedPeriod') }}</span><h2>{{ t('checklistCalendar.assignedChecks') }}</h2></div><b>{{ t('checklistCalendar.taskCount', { count: visibleTasks.length }) }}</b></div>
+      <template v-else-if="!selected">
+        <section class="checklist-statistics" :aria-label="t('checklistCalendar.periodSummary')">
+          <header><span>{{ periodLabel }}</span><strong>{{ t(`checklistCalendar.${frequency.toLowerCase()}`) }} {{ t('checklistCalendar.taskSummary') }}</strong></header>
+          <article class="checklist-stat-card total"><span><ClipboardCheck :size="22" /></span><div><small>{{ t('checklistCalendar.totalTasks') }}</small><strong>{{ periodTasks.length }}</strong><p>{{ t('checklistCalendar.scheduledInPeriod') }}</p></div></article>
+          <article class="checklist-stat-card completed"><span><CheckCircle2 :size="22" /></span><div><small>{{ t('checklistCalendar.totalCompleted') }}</small><strong>{{ periodCompleted }}</strong><p>{{ t('checklistCalendar.completedInPeriod') }}</p></div></article>
+          <article class="checklist-stat-card missed"><span><X :size="22" /></span><div><small>{{ t('checklistCalendar.notConducted') }}</small><strong>{{ periodNotConducted }}</strong><p>{{ t('checklistCalendar.missedOrOverdue') }}</p></div></article>
+          <article class="checklist-stat-card outstanding"><span><Clock3 :size="22" /></span><div><small>{{ t('checklistCalendar.outstanding') }}</small><strong>{{ periodOutstanding }}</strong><p>{{ t('checklistCalendar.pendingOrInProgress') }}</p></div></article>
+        </section>
+        <section class="manager-task-list"><ChecklistCalendar v-model:view-month="viewMonth" :selected-date="selectedDate" :frequency="frequency" :tasks="tasks" @update:selected-date="selectedDate = $event" /><div class="task-list-heading"><div><span>{{ t('checklistCalendar.selectedPeriod') }}</span><h2>{{ t('checklistCalendar.assignedChecks') }}</h2></div><b>{{ t('checklistCalendar.taskCount', { count: visibleTasks.length }) }}</b></div>
         <article v-for="task in visibleTasks" :key="task.id"><span class="equipment-icon"><ClipboardCheck :size="23" /></span><div><strong>{{ task.equipment.equipmentType.name }}</strong><span>{{ task.equipment.assetCode }} · {{ t('checklistCalendar.checkCount', { count: task.maintenanceSchedule.checklistTemplate.items.length }) }}</span></div><span class="task-status" :class="`task-status--${task.status.toLowerCase()}`">{{ task.status.replaceAll('_',' ') }}</span><button v-if="!task.status.startsWith('COMPLETED')" type="button" @click="startTask(task)"><Play :size="16" />{{ task.status === 'IN_PROGRESS' ? t('checklistCalendar.continue') : t('checklistCalendar.start') }}<ChevronRight :size="16" /></button><CheckCircle2 v-else class="completed-icon" :size="23" /></article>
         <div v-if="!visibleTasks.length" class="checklist-empty"><ClipboardCheck :size="36" /><strong>{{ t('checklistCalendar.noTaskForDate') }}</strong><span>{{ t('checklistCalendar.noTaskHint') }}</span></div>
-      </section>
+        </section>
+      </template>
       <section v-else class="checklist-runner"><header><button type="button" @click="selected=null">← Back to tasks</button><div><span>{{ selected.equipment.assetCode }}</span><h2>{{ template.name }}</h2><p>{{ template.items.length }} required checks · approximately {{ template.estimatedDurationMinutes || 10 }} minutes</p></div></header>
         <form @submit.prevent="submit"><article v-for="(item,index) in template.items" :key="item.id" class="answer-card"><div class="answer-number">{{ index+1 }}</div><div class="answer-content"><span class="answer-type"><Camera v-if="item.inputType.includes('PHOTO')" :size="15" /><Thermometer v-else-if="item.inputType==='TEMPERATURE'" :size="15" /><ClipboardCheck v-else :size="15" />{{ item.inputType.replaceAll('_',' ') }}<b v-if="item.isRequired">Required</b></span><h3>{{ item.title }}</h3><p v-if="item.instruction">{{ item.instruction }}</p>
           <div v-if="['YES_NO','PASS_FAIL','CHECKBOX'].includes(item.inputType)" class="choice-buttons"><button type="button" :class="{ selected: answerFor(item).boolean === true }" @click="answerFor(item).boolean=true">{{ item.inputType==='PASS_FAIL' ? 'Pass' : 'Yes' }}</button><button type="button" :class="{ selected: answerFor(item).boolean === false }" @click="answerFor(item).boolean=false">{{ item.inputType==='PASS_FAIL' ? 'Fail' : 'No' }}</button></div>
